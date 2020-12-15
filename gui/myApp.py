@@ -16,15 +16,65 @@ class Ui_MainWindow(object):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(600, 500)
         MainWindow.setStyleSheet("*{\n"
-"    font-family: Arial;\n"
+"    font-family: Helvetica;\n"
 "    font-weight: bold;\n"
+"    border: 0;\n"
 "}\n"
 "\n"
 "#page_login {\n"
-"    border-image: url(\'./assets/images/bck.jpg\') 0 0 0 0 stretch stretch;    \n"
+"    border-image: url(\'assets/images/bck.jpg\') 0 0 0 0 stretch stretch;    \n"
 "}\n"
 "\n"
-"#page_messages {\n"
+"/* tab bar styles */\n"
+"\n"
+"QTabWidget::pane {\n"
+"    border-top: 2px solid #C2C7CB;\n"
+"}\n"
+"\n"
+"QTabBar {\n"
+"    background-color: #C2C7CB;\n"
+"}\n"
+"\n"
+"QTabBar::tab {\n"
+"    background: #0F0F0F;\n"
+"    color: white;\n"
+"    border-bottom-color: #C2C7CB;\n"
+"    min-width: 8ex;\n"
+"    padding: 2px;\n"
+"}\n"
+"\n"
+"QTabBar::tab:selected, QTabBar::tab:hover {\n"
+"    background: rgb(17, 132, 224);\n"
+"}\n"
+"QTabBar::tab:selected {\n"
+"    border-bottom-color: #C2C7CB;\n"
+"}\n"
+"QTabBar::tab:!selected {\n"
+"    margin-top: 2px;\n"
+"}\n"
+"\n"
+"/* end of tab bar */\n"
+"/* settings tab */\n"
+"\n"
+"#account_tab {\n"
+"    background-color: white;\n"
+"}\n"
+"\n"
+"Line {\n"
+"    color: black;\n"
+"    background-color: black;\n"
+"}\n"
+"\n"
+"/* end of settings tab*/\n"
+"\n"
+"/* charts tab */\n"
+"\n"
+"#charts_tab {\n"
+"    background-color: white;\n"
+"}\n"
+"\n"
+"/* end of charts tab*/\n"
+"#messages_tab {\n"
 "    background-color: rgb(211, 215, 207)\n"
 "}\n"
 "\n"
@@ -46,7 +96,7 @@ class Ui_MainWindow(object):
 "\n"
 "QPushButton {\n"
 "    border: 0;\n"
-"    background-color: rgb(114, 159, 207);\n"
+"    background-color: rgb(17, 132, 224);\n"
 "}\n"
 "\n"
 "#createButton {\n"
@@ -79,20 +129,39 @@ class Ui_MainWindow(object):
 "    border: 0px solid;\n"
 "}\n"
 "\n"
-"#menuBar {\n"
-"    border: 0;\n"
-"}\n"
-"\n"
 "QPushButton:hover {\n"
 "    color: white;\n"
 "}\n"
 "\n"
+"#logOut {\n"
+"    background-color: rgb(239, 41, 41);\n"
+"}\n"
 "\n"
+"/* drop down */\n"
+"\n"
+"QComboBox::item {\n"
+"    background-color: rgba(0, 0, 0, 0.4)\n"
+"}\n"
+"\n"
+"QComboBox::down-arrow {\n"
+"    image: url(assets/images/arrow_down.png);\n"
+"}\n"
+"\n"
+"QComboBox::drop-down {\n"
+"    border: 0;\n"
+"}\n"
+"\n"
+"QComboBox {\n"
+"    background-color: rgba(0, 0, 0, 0.3);\n"
+"    border: 0;\n"
+"}\n"
+"\n"
+"/* end of drop down */\n"
 "\n"
 "")
         MainWindow.setDocumentMode(False)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
-        self.centralwidget.setAutoFillBackground(True)
+        self.centralwidget.setAutoFillBackground(False)
         self.centralwidget.setObjectName("centralwidget")
         self.stackedWidget = QtWidgets.QStackedWidget(self.centralwidget)
         self.stackedWidget.setGeometry(QtCore.QRect(-10, 0, 611, 501))
@@ -126,7 +195,7 @@ class Ui_MainWindow(object):
         self.loginHeader = QtWidgets.QLabel(self.loginWrapper)
         self.loginHeader.setGeometry(QtCore.QRect(46, 50, 261, 41))
         font = QtGui.QFont()
-        font.setFamily("Arial")
+        font.setFamily("Helvetica")
         font.setPointSize(25)
         font.setBold(True)
         font.setWeight(75)
@@ -136,40 +205,73 @@ class Ui_MainWindow(object):
         self.loginHeader.setAlignment(QtCore.Qt.AlignCenter)
         self.loginHeader.setObjectName("loginHeader")
         self.stackedWidget.addWidget(self.page_login)
-        self.page_messages = QtWidgets.QWidget()
-        self.page_messages.setObjectName("page_messages")
-        self.messageInput = QtWidgets.QTextEdit(self.page_messages)
-        self.messageInput.setGeometry(QtCore.QRect(20, 460, 481, 31))
+        self.page_2 = QtWidgets.QWidget()
+        self.page_2.setObjectName("page_2")
+        self.page_2_tabs = QtWidgets.QTabWidget(self.page_2)
+        self.page_2_tabs.setGeometry(QtCore.QRect(10, 0, 600, 500))
+        self.page_2_tabs.setCursor(QtGui.QCursor(QtCore.Qt.ArrowCursor))
+        self.page_2_tabs.setAutoFillBackground(False)
+        self.page_2_tabs.setTabShape(QtWidgets.QTabWidget.Rounded)
+        self.page_2_tabs.setTabsClosable(False)
+        self.page_2_tabs.setObjectName("page_2_tabs")
+        self.messages_tab = QtWidgets.QWidget()
+        self.messages_tab.setObjectName("messages_tab")
+        self.messageInput = QtWidgets.QTextEdit(self.messages_tab)
+        self.messageInput.setGeometry(QtCore.QRect(10, 430, 481, 31))
         self.messageInput.viewport().setProperty("cursor", QtGui.QCursor(QtCore.Qt.IBeamCursor))
         self.messageInput.setStyleSheet("")
         self.messageInput.setObjectName("messageInput")
-        self.sendButton = QtWidgets.QPushButton(self.page_messages)
-        self.sendButton.setGeometry(QtCore.QRect(510, 460, 91, 31))
+        self.sendButton = QtWidgets.QPushButton(self.messages_tab)
+        self.sendButton.setGeometry(QtCore.QRect(500, 430, 91, 31))
         self.sendButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap('./assets/images/outline_send_black_18dp.png'), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("assets/images/outline_send_black_18dp.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.sendButton.setIcon(icon)
         self.sendButton.setAutoDefault(False)
         self.sendButton.setObjectName("sendButton")
-        self.line = QtWidgets.QFrame(self.page_messages)
-        self.line.setGeometry(QtCore.QRect(0, 430, 611, 3))
+        self.messages = QtWidgets.QTextEdit(self.messages_tab)
+        self.messages.setEnabled(True)
+        self.messages.setGeometry(QtCore.QRect(0, 0, 600, 421))
+        self.messages.setReadOnly(True)
+        self.messages.setObjectName("messages")
+        self.page_2_tabs.addTab(self.messages_tab, "")
+        self.charts_tab = QtWidgets.QWidget()
+        self.charts_tab.setObjectName("charts_tab")
+        self.page_2_tabs.addTab(self.charts_tab, "")
+        self.account_tab = QtWidgets.QWidget()
+        self.account_tab.setObjectName("account_tab")
+        self.frame = QtWidgets.QFrame(self.account_tab)
+        self.frame.setGeometry(QtCore.QRect(20, 20, 561, 431))
+        self.frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self.frame.setFrameShadow(QtWidgets.QFrame.Raised)
+        self.frame.setObjectName("frame")
+        self.label = QtWidgets.QLabel(self.frame)
+        self.label.setGeometry(QtCore.QRect(20, 6, 111, 21))
+        self.label.setObjectName("label")
+        self.comboBox = QtWidgets.QComboBox(self.frame)
+        self.comboBox.setGeometry(QtCore.QRect(20, 40, 111, 31))
+        self.comboBox.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.comboBox.setEditable(False)
+        self.comboBox.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContentsOnFirstShow)
+        self.comboBox.setFrame(True)
+        self.comboBox.setObjectName("comboBox")
+        self.comboBox.addItem("")
+        self.comboBox.addItem("")
+        self.line = QtWidgets.QFrame(self.frame)
+        self.line.setGeometry(QtCore.QRect(10, 30, 151, 2))
         self.line.setFrameShape(QtWidgets.QFrame.HLine)
         self.line.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.line.setObjectName("line")
-        self.messages = QtWidgets.QFrame(self.page_messages)
-        self.messages.setGeometry(QtCore.QRect(10, 0, 601, 451))
-        self.messages.setFrameShape(QtWidgets.QFrame.StyledPanel)
-        self.messages.setFrameShadow(QtWidgets.QFrame.Raised)
-        self.messages.setObjectName("messages")
-        self.backButton = QtWidgets.QToolButton(self.messages)
-        self.backButton.setGeometry(QtCore.QRect(5, 5, 26, 24))
-        self.backButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.backButton.setText("")
-        icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap("./assets/images/arrow_back.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.backButton.setIcon(icon1)
-        self.backButton.setObjectName("backButton")
-        self.stackedWidget.addWidget(self.page_messages)
+        self.save_button = QtWidgets.QPushButton(self.frame)
+        self.save_button.setGeometry(QtCore.QRect(450, 390, 89, 25))
+        self.save_button.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.save_button.setObjectName("save_button")
+        self.logOut = QtWidgets.QPushButton(self.frame)
+        self.logOut.setGeometry(QtCore.QRect(20, 390, 89, 25))
+        self.logOut.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.logOut.setObjectName("logOut")
+        self.page_2_tabs.addTab(self.account_tab, "")
+        self.stackedWidget.addWidget(self.page_2)
         MainWindow.setCentralWidget(self.centralwidget)
         self.actionLog_Iyt = QtWidgets.QAction(MainWindow)
         self.actionLog_Iyt.setObjectName("actionLog_Iyt")
@@ -190,6 +292,7 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
         self.stackedWidget.setCurrentIndex(1)
+        self.page_2_tabs.setCurrentIndex(2)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -202,6 +305,14 @@ class Ui_MainWindow(object):
         self.loginHeader.setText(_translate("MainWindow", "Login"))
         self.sendButton.setText(_translate("MainWindow", "Send"))
         self.sendButton.setShortcut(_translate("MainWindow", "Return"))
+        self.page_2_tabs.setTabText(self.page_2_tabs.indexOf(self.messages_tab), _translate("MainWindow", "Messages"))
+        self.page_2_tabs.setTabText(self.page_2_tabs.indexOf(self.charts_tab), _translate("MainWindow", "Charts"))
+        self.label.setText(_translate("MainWindow", "Language"))
+        self.comboBox.setItemText(0, _translate("MainWindow", "English"))
+        self.comboBox.setItemText(1, _translate("MainWindow", "ქართული"))
+        self.save_button.setText(_translate("MainWindow", "Save"))
+        self.logOut.setText(_translate("MainWindow", "Log Out"))
+        self.page_2_tabs.setTabText(self.page_2_tabs.indexOf(self.account_tab), _translate("MainWindow", "Account"))
         self.actionLog_Iyt.setText(_translate("MainWindow", "Log out"))
         self.actionEdit.setText(_translate("MainWindow", "Edit"))
         self.actionEN.setText(_translate("MainWindow", "EN"))
