@@ -1,22 +1,27 @@
 from gui.myApp import Ui_MainWindow
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import (QApplication, QMainWindow)
+import time
 import sys
 import pymongo
+import dns
 import threading
 
-ip = '192.168.0.108'
-port = 27017
-conn = pymongo.MongoClient(ip, port)
-db = conn['messaging_app']
+
+client = pymongo.MongoClient("mongodb+srv://admin:admin@messaging.gfeax.mongodb.net/messaging_app?retryWrites=true&w=majority")
+db = client['messaging_app']
 messages = db['messages']
 users = db['users']
 
 
+
 def set_interval(func, seconds: int = 1):
     def wrapper():
+        lock = threading.Lock()
+        lock.acquire()
         func()
         set_interval(func)
+        lock.release()
 
     t = threading.Timer(seconds, wrapper)
     t.start()
@@ -32,6 +37,7 @@ class Window(QMainWindow):
         self.ui.setupUi(self)
         self.user = None
         self.ui.stackedWidget.setCurrentIndex(0)
+        self.ui.page_2_tabs.setCurrentIndex(0)
         self.ui.logOut.clicked.connect(self.back_to_login)
         self.ui.loginButton.clicked.connect(self.login_to_account)
         self.ui.createButton.clicked.connect(self.create_user)
@@ -46,7 +52,7 @@ class Window(QMainWindow):
         username = self.ui.inputUsername.text()
         password = self.ui.inputPassword.text()
 
-        user = users.find_one({ "username": username, "password": password })
+        user = users.find_one({"username": username, "password": password})
         if user:
             self.ui.inputPassword.setText('')
             self.ui.inputUsername.setText('')
@@ -68,9 +74,21 @@ class Window(QMainWindow):
     def check_messages(self):
         for message in messages.find():
             if message not in self.rendered_messages:
+                div_style = 'style="margin-top: 10px;"'
+
+                print(message['sender'], self.user)
+                if message['sender'] != self.user:
+                    sender_style = 'color: blue;'
+                else:
+                    sender_style = 'color: red;'
+
+                new_message = f'''<div {div_style}><span style="{sender_style}">{message['sender']}</span>: {message['message']}</div>'''
+
+                self.append_text(new_message)
+
+                self.ui.messages.insertHtml(text)
+                self.ui.messages.textCursor().insertBlock()
                 self.rendered_messages.append(message)
-                new_message = str(f"{message['sender']}: {message['message']}")
-                self.ui.messages.insertHtml(message['message'])
 
     def send_message(self):
         new_message = self.ui.messageInput.toPlainText()

@@ -21,6 +21,7 @@ class Ui_MainWindow(object):
 "    border: 0;\n"
 "}\n"
 "\n"
+"\n"
 "#page_login {\n"
 "    border-image: url(\'assets/images/bck.jpg\') 0 0 0 0 stretch stretch;    \n"
 "}\n"
@@ -232,6 +233,8 @@ class Ui_MainWindow(object):
         self.messages = QtWidgets.QTextEdit(self.messages_tab)
         self.messages.setEnabled(True)
         self.messages.setGeometry(QtCore.QRect(0, 0, 600, 421))
+        self.messages.setAccessibleName("")
+        self.messages.setAccessibleDescription("")
         self.messages.setReadOnly(True)
         self.messages.setObjectName("messages")
         self.page_2_tabs.addTab(self.messages_tab, "")
@@ -270,6 +273,20 @@ class Ui_MainWindow(object):
         self.logOut.setGeometry(QtCore.QRect(20, 390, 89, 25))
         self.logOut.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.logOut.setObjectName("logOut")
+        self.label_2 = QtWidgets.QLabel(self.frame)
+        self.label_2.setGeometry(QtCore.QRect(20, 110, 81, 17))
+        self.label_2.setObjectName("label_2")
+        self.line_2 = QtWidgets.QFrame(self.frame)
+        self.line_2.setGeometry(QtCore.QRect(10, 130, 151, 2))
+        self.line_2.setFrameShape(QtWidgets.QFrame.HLine)
+        self.line_2.setFrameShadow(QtWidgets.QFrame.Sunken)
+        self.line_2.setObjectName("line_2")
+        self.comboBox_3 = QtWidgets.QComboBox(self.frame)
+        self.comboBox_3.setGeometry(QtCore.QRect(20, 140, 111, 31))
+        self.comboBox_3.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.comboBox_3.setObjectName("comboBox_3")
+        self.comboBox_3.addItem("")
+        self.comboBox_3.addItem("")
         self.page_2_tabs.addTab(self.account_tab, "")
         self.stackedWidget.addWidget(self.page_2)
         MainWindow.setCentralWidget(self.centralwidget)
@@ -292,7 +309,7 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
         self.stackedWidget.setCurrentIndex(1)
-        self.page_2_tabs.setCurrentIndex(2)
+        self.page_2_tabs.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -305,6 +322,11 @@ class Ui_MainWindow(object):
         self.loginHeader.setText(_translate("MainWindow", "Login"))
         self.sendButton.setText(_translate("MainWindow", "Send"))
         self.sendButton.setShortcut(_translate("MainWindow", "Return"))
+        self.messages.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'Helvetica\'; font-size:11pt; font-weight:600; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>"))
         self.page_2_tabs.setTabText(self.page_2_tabs.indexOf(self.messages_tab), _translate("MainWindow", "Messages"))
         self.page_2_tabs.setTabText(self.page_2_tabs.indexOf(self.charts_tab), _translate("MainWindow", "Charts"))
         self.label.setText(_translate("MainWindow", "Language"))
@@ -312,6 +334,9 @@ class Ui_MainWindow(object):
         self.comboBox.setItemText(1, _translate("MainWindow", "ქართული"))
         self.save_button.setText(_translate("MainWindow", "Save"))
         self.logOut.setText(_translate("MainWindow", "Log Out"))
+        self.label_2.setText(_translate("MainWindow", "User color"))
+        self.comboBox_3.setItemText(0, _translate("MainWindow", "Blue"))
+        self.comboBox_3.setItemText(1, _translate("MainWindow", "Green"))
         self.page_2_tabs.setTabText(self.page_2_tabs.indexOf(self.account_tab), _translate("MainWindow", "Account"))
         self.actionLog_Iyt.setText(_translate("MainWindow", "Log out"))
         self.actionEdit.setText(_translate("MainWindow", "Edit"))
