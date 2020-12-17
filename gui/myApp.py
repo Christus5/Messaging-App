@@ -112,6 +112,10 @@ class Ui_MainWindow(object):
 "    border: 0;\n"
 "}\n"
 "\n"
+"#admin_delete_messages{\n"
+"    background-color: rgb(164, 0, 0);\n"
+"}\n"
+"\n"
 "#sendButton {\n"
 "    background-color: rgb(17, 132, 224);\n"
 "    border-radius: 15px;\n"
@@ -226,7 +230,7 @@ class Ui_MainWindow(object):
         self.sendButton.setGeometry(QtCore.QRect(500, 430, 91, 31))
         self.sendButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("assets/images/outline_send_black_18dp.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("./images/outline_send_black_18dp.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.sendButton.setIcon(icon)
         self.sendButton.setAutoDefault(False)
         self.sendButton.setObjectName("sendButton")
@@ -287,6 +291,9 @@ class Ui_MainWindow(object):
         self.comboBox_3.setObjectName("comboBox_3")
         self.comboBox_3.addItem("")
         self.comboBox_3.addItem("")
+        self.admin_delete_messages = QtWidgets.QPushButton(self.frame)
+        self.admin_delete_messages.setGeometry(QtCore.QRect(130, 390, 161, 25))
+        self.admin_delete_messages.setObjectName("admin_delete_messages")
         self.page_2_tabs.addTab(self.account_tab, "")
         self.stackedWidget.addWidget(self.page_2)
         MainWindow.setCentralWidget(self.centralwidget)
@@ -309,7 +316,7 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
         self.stackedWidget.setCurrentIndex(1)
-        self.page_2_tabs.setCurrentIndex(0)
+        self.page_2_tabs.setCurrentIndex(2)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -337,6 +344,7 @@ class Ui_MainWindow(object):
         self.label_2.setText(_translate("MainWindow", "User color"))
         self.comboBox_3.setItemText(0, _translate("MainWindow", "Blue"))
         self.comboBox_3.setItemText(1, _translate("MainWindow", "Green"))
+        self.admin_delete_messages.setText(_translate("MainWindow", "Delete Messages"))
         self.page_2_tabs.setTabText(self.page_2_tabs.indexOf(self.account_tab), _translate("MainWindow", "Account"))
         self.actionLog_Iyt.setText(_translate("MainWindow", "Log out"))
         self.actionEdit.setText(_translate("MainWindow", "Edit"))

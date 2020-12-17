@@ -1,117 +1,99 @@
+from gui.myApp import Ui_MainWindow
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QMainWindow
-from gui.naming import *
+import time
+from PyQt5.QtWidgets import (QApplication, QMainWindow)
+from assets.timing import SetInterval
+from assets.data_base import (messages, users)
 
 
 class Window(QMainWindow):
     def __init__(self):
         super(Window, self).__init__()
 
-        self.setGeometry(0, 0, 500, 500)
-        self.setWindowTitle("Messaging App")
-        self.pages = {
-            login: self.create_login_page(),
-            messages: self.create_messages_page()
-        }
-        self.active_page = None
-        self.set_active_page(login)
-        self.init_login_ui()
-        self.init_messages_ui()
+        self.ui = Ui_MainWindow()
 
-    def set_active_page(self, name: str):
-        self.active_page = self.pages[name]
-        self.pages[login][inputs]['username'].hide()
+        self.ui.setupUi(self)
+        self.user: str = ''
+        self.ui.stackedWidget.setCurrentIndex(0)
+        self.ui.page_2_tabs.setCurrentIndex(0)
+        self.ui.logOut.clicked.connect(self.back_to_login)
+        self.ui.loginButton.clicked.connect(self.login_to_account)
+        self.ui.createButton.clicked.connect(self.create_user)
+        self.ui.admin_delete_messages.clicked.connect(self.delete_messages)
+        self.cm = SetInterval()
 
-        for page in self.pages.keys():
-            print(f"Page: {page}")
-            if name != page:
-                print(f"\tTo be removed: {page}")
-                for widgets in self.pages[page].keys():
-                    print(f"\t\tWidgets: {widgets}")
-                    if widgets != 'actions':
-                        for widget in self.pages[page][widgets].keys():
-                            self.pages[page][widgets][widget].hide()
+        self.ui.sendButton.clicked.connect(self.send_message)
+        self.rendered_messages: list = []
+
+    def back_to_login(self):
+        self.cm.terminate()
+        self.ui.stackedWidget.setCurrentIndex(0)
+
+    def login_to_account(self):
+        username = self.ui.inputUsername.text()
+        password = self.ui.inputPassword.text()
+        self.ui.inputUsername.setStyleSheet('border-bottom-color: rgb(186, 189, 182);')
+        self.ui.inputPassword.setStyleSheet('border-bottom-color: rgb(186, 189, 182);')
+
+        user = users.find_one({"username": username, "password": password})
+        if user:
+            self.rendered_messages = []
+            self.ui.messages.setText('')
+            self.user = ''
+            self.ui.inputPassword.setText('')
+            self.ui.inputUsername.setText('')
+            self.ui.stackedWidget.setCurrentIndex(1)
+            self.user = username
+            self.cm.call(self.check_messages, seconds=1)
+            # set_interval(self.check_messages, seconds=1)
+            if self.user != 'admin':
+                self.ui.admin_delete_messages.hide()
             else:
-                print(f"\tPage to be Shown: {page}")
-                for widgets in self.pages[page].keys():
-                    print(f"\t\tWidgets: {widgets}")
-                    if widgets != 'actions':
-                        for widget in self.pages[page][widgets].keys():
-                            self.pages[page][widgets][widget].show()
+                self.ui.admin_delete_messages.show()
+        else:
+            self.ui.inputUsername.setStyleSheet('border-bottom-color: red;')
+            self.ui.inputPassword.setStyleSheet('border-bottom-color: red;')
+            print("incorrect login credentials!")
 
-    def init_login_ui(self):
-        page = self.pages[login]
-        width = self.width() / 3
-        height = self.height() / 2
-        # აქ როგორც გინდა ისე დაწერე, მე page[buttons] მირჩევნია
-        btns = page[buttons]
-        btns['login'].move(200, 250)
-        btns['login'].setText("Login")
-        btns['login'].clicked.connect(page[actions]['login'])
-
-        page[inputs]['username'].setGeometry(170, 150, width, 30)
-        page[inputs]['password'].setGeometry(170, 200, width, 30)
-
-        for name in page[inputs].keys():
-            page[inputs][name].setStyleSheet('''
-                background-color: #531034; 
-                color: #FFF; 
-                border-radius: 15px;
-                ''')
-
-    def init_messages_ui(self):
-        page = self.pages[messages]
-
-        page[display]['main'].setGeometry(10, 50, self.width() - 20, self.height() - 100)
-        page[display]['main'].setStyleSheet('background-color: #808080; border-radius: 15px;')
-
-        page[inputs]['main'].setGeometry(10, self.height() - 40, (self.width() - 100), 30)
-
-        page[buttons]['send'].setText("Send")
-        page[buttons]['send'].setStyleSheet('background-color: #267DE6')
-        page[buttons]['send'].setGeometry(self.width() - 90, self.height() - 40, 80, 30)
-
-    def create_login_page(self):
-        return {
-            buttons: {
-                'login': QtWidgets.QPushButton(self)
-            },
-            inputs: {
-                'username': QtWidgets.QTextEdit(self),
-                'password': QtWidgets.QTextEdit(self)
-            },
-            labels: {
-                'username': QtWidgets.QLabel(self),
-                'password': QtWidgets.QLabel(self)
-            },
-            actions: self.login_actions()
-        }
-
-    def login_actions(self):
-        def action_login():
-            page = self.pages[login]
-            username = page[inputs]['username'].toPlainText()
-            password = page[inputs]['password'].toPlainText()
-
-            if username == "admin" and password == "admin":
-                self.set_active_page(messages)
+    def create_user(self):
+        username: str = self.ui.inputUsername.text()
+        password: str = self.ui.inputPassword.text()
+        if username and password:
+            if users.find_one({"username": username}):
+                print("user already exists!")
+                self.ui.inputUsername.setStyleSheet('border-bottom-color: red;')
+                self.ui.inputPassword.setStyleSheet('border-bottom-color: red;')
             else:
-                for inp in page[inputs].keys():
-                    page[inputs][inp].setStyleSheet('background-color: red;')
+                users.insert_one({"username": username, "password": password})
+                self.ui.inputUsername.setStyleSheet('border-bottom-color: green;')
+                self.ui.inputPassword.setStyleSheet('border-bottom-color: green;')
+        else:
+            self.ui.inputUsername.setStyleSheet('border-bottom-color: red;')
+            self.ui.inputPassword.setStyleSheet('border-bottom-color: red;')
 
-        return {
-            'login': action_login
-        }
+    def check_messages(self):
+        for message in messages.find():
+            if message not in self.rendered_messages:
+                div_style = 'margin-top: 10px;'
 
-    def create_messages_page(self):
-        return {
-            display: {
-                'main': QtWidgets.QLabel(self)
-            },
-            inputs: {
-                'main': QtWidgets.QTextEdit(self)
-            },
-            buttons: {
-                'send': QtWidgets.QPushButton(self)
-            }
-        }
+                if message['sender'] != self.user:
+                    sender_style = 'color: blue;'
+                else:
+                    sender_style = 'color: red;'
+
+                new_message = f'''<div style="{div_style}"><span style="{sender_style}">{message['sender']}</span>: {message['message']}</div>'''
+
+                self.ui.messages.insertHtml(new_message)
+                self.ui.messages.textCursor().insertBlock()
+                self.rendered_messages.append(message)
+
+    def send_message(self):
+        new_message = self.ui.messageInput.toPlainText()
+        self.ui.messageInput.setText("")
+        if new_message != '':
+            messages.insert_one({"message": new_message, "id": -1, "sender": self.user, "date": time.asctime()})
+
+    def delete_messages(self):
+        messages.drop()
+        self.ui.messages.setText('')
+        self.rendered_messages = []
