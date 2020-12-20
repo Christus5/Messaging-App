@@ -1,9 +1,10 @@
 from gui.myApp import Ui_MainWindow
-from PyQt5 import QtWidgets
 import time
-from PyQt5.QtWidgets import (QApplication, QMainWindow)
-from assets.timing import SetInterval
+from PyQt5.QtWidgets import (QMainWindow)
+from assets.classes.timing import SetInterval
 from assets.data_base import (messages, users)
+from assets.data_generator import generate_messages
+from assets.classes.message import Message
 
 
 class Window(QMainWindow):
@@ -25,6 +26,13 @@ class Window(QMainWindow):
         self.ui.sendButton.clicked.connect(self.send_message)
         self.rendered_messages: list = []
 
+        # self.generate_messages_wrapper()
+
+    def generate_messages_wrapper(self):
+        # self.cm.terminate()
+        generate_messages(100)
+        # self.cm.call(self.check_messages, seconds=0.1)
+
     def back_to_login(self):
         self.cm.terminate()
         self.ui.stackedWidget.setCurrentIndex(0)
@@ -44,7 +52,7 @@ class Window(QMainWindow):
             self.ui.inputUsername.setText('')
             self.ui.stackedWidget.setCurrentIndex(1)
             self.user = username
-            self.cm.call(self.check_messages, seconds=1)
+            self.cm.call(self.check_messages, seconds=0.1)
             # set_interval(self.check_messages, seconds=1)
             if self.user != 'admin':
                 self.ui.admin_delete_messages.hide()
@@ -71,21 +79,19 @@ class Window(QMainWindow):
             self.ui.inputUsername.setStyleSheet('border-bottom-color: red;')
             self.ui.inputPassword.setStyleSheet('border-bottom-color: red;')
 
+    def render_message(self, message):
+        is_user = True if message['sender'] == self.user else False
+
+        new_message = Message(message['message'], message['sender'], message['date'], is_user)
+
+        self.ui.messages.insertHtml(new_message.to_html())
+        self.ui.messages.textCursor().insertBlock()
+        self.rendered_messages.append(message)
+
     def check_messages(self):
         for message in messages.find():
             if message not in self.rendered_messages:
-                div_style = 'margin-top: 10px;'
-
-                if message['sender'] != self.user:
-                    sender_style = 'color: blue;'
-                else:
-                    sender_style = 'color: red;'
-
-                new_message = f'''<div style="{div_style}"><span style="{sender_style}">{message['sender']}</span>: {message['message']}</div>'''
-
-                self.ui.messages.insertHtml(new_message)
-                self.ui.messages.textCursor().insertBlock()
-                self.rendered_messages.append(message)
+                self.render_message(message)
 
     def send_message(self):
         new_message = self.ui.messageInput.toPlainText()

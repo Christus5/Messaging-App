@@ -18,6 +18,7 @@ class SetInterval:
     def terminate(self):
         self.__running = False
 
-    def call(self, func, seconds: int = 1):
+    def call(self, func, seconds: float = 1):
         self.__running = True
-        threading.Thread(target=self.run, args=(seconds, func)).start()
+        t = threading.Thread(target=self.run, args=(seconds, func))
+        t.start()

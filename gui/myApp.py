@@ -18,6 +18,7 @@ class Ui_MainWindow(object):
         MainWindow.setStyleSheet("*{\n"
 "    font-family: Helvetica;\n"
 "    font-weight: bold;\n"
+"    font-size: 12pt;\n"
 "    border: 0;\n"
 "}\n"
 "\n"
@@ -49,6 +50,7 @@ class Ui_MainWindow(object):
 "}\n"
 "QTabBar::tab:selected {\n"
 "    border-bottom-color: #C2C7CB;\n"
+"    outline: 0;\n"
 "}\n"
 "QTabBar::tab:!selected {\n"
 "    margin-top: 2px;\n"
@@ -230,7 +232,7 @@ class Ui_MainWindow(object):
         self.sendButton.setGeometry(QtCore.QRect(500, 430, 91, 31))
         self.sendButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("./images/outline_send_black_18dp.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("assets/images/outline_send_black_18dp.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.sendButton.setIcon(icon)
         self.sendButton.setAutoDefault(False)
         self.sendButton.setObjectName("sendButton")
