@@ -8,11 +8,10 @@ def create_message():
 
 
 def generate_messages(quantity: int):
-    if quantity > 100:
+    if quantity > 10:
         for _ in range(quantity):
             t = Thread(target=create_message)
             t.start()
-            t.join()
     else:
         for _ in range(quantity):
             create_message()

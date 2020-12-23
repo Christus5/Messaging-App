@@ -1,24 +1,27 @@
 import threading
 import time
+from PyQt5.QtCore import QThread, pyqtSignal
+from assets.data_base import messages
+import pandas as pd
 
 
-class SetInterval:
-    def __init__(self):
-        self.__running = True
+class Worker(QThread):
+    checkMessage = pyqtSignal(dict)
 
-    def run(self, seconds, callback):
-        while self.__running:
-            time.sleep(seconds)
-            lock = threading.Lock()
-            lock.acquire()
-            callback()
-            lock.release()
-            print(threading.active_count())
+    def __init__(self, r_m,  parent=None):
+        QThread.__init__(self, parent)
+        self.running = False
+        self.rendered_m = r_m
 
-    def terminate(self):
-        self.__running = False
+    def run(self):
+        self.running = True
+        while self.running:
+            for message in messages.find():
+                if message not in self.rendered_m:
+                    self.checkMessage.emit(message)
 
-    def call(self, func, seconds: float = 1):
-        self.__running = True
-        t = threading.Thread(target=self.run, args=(seconds, func))
-        t.start()
+    def terminate(self) -> None:
+        self.running = False
+
+    def update_rendered_messages(self, r_m) -> None:
+        self.rendered_m = r_m
