@@ -36,9 +36,31 @@ class Window(QMainWindow):
         # background threads
         self.init_background_workers()
 
+        self.chart_update()
+        self.sc = MplCanvas(self)
+
+        self.df = pd.DataFrame(self.rendered_messages)
+
     """
         Active methods (that can be called by users)
     """
+
+    def chart_update(self):
+        try:
+            df = pd.DataFrame(self.rendered_messages)
+            df = (df['sender'].groupby(df['sender'])).count()
+
+            self.sc.axes.cla()
+
+            df.plot(ax=self.sc.axes,
+                    kind='pie',
+                    autopct='%1.1f%%',
+                    ylabel='')
+
+            self.sc.draw()
+            self.ui.chartsLayout.addWidget(self.sc)
+        except KeyError:
+            pass
 
     def back_to_login(self) -> None:
         # stop checking for new messages
@@ -72,7 +94,7 @@ class Window(QMainWindow):
                 self.ui.admin_generate_messages.hide()
             else:
                 self.ui.admin_delete_messages.show()
-                self.ui.admin_delete_messages.show()
+                self.ui.admin_generate_messages.show()
 
             self.ui.loginResult.setText('')
 
@@ -134,6 +156,7 @@ class Window(QMainWindow):
         # update rendered messages list
         self.rendered_messages.append(message)
         self.check_messages.update_rendered_messages(self.rendered_messages)
+        # self.chart_update()
 
         # scrolls messages to bottom
         self.ui.messages.ensureCursorVisible()
@@ -168,6 +191,7 @@ class Window(QMainWindow):
         self.ui.admin_delete_messages.clicked.connect(self.delete_messages)
         self.ui.admin_generate_messages.clicked.connect(lambda: generate_messages(15))
         self.ui.sendButton.clicked.connect(self.send_message)
+        self.ui.refreshChart.clicked.connect(self.chart_update)
 
     def init_background_workers(self):
         self.check_messages.checkMessage.connect(self.render_message)

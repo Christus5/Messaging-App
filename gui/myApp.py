@@ -28,10 +28,6 @@ class Ui_messagingApp(object):
 "    background-color: rgb(17, 132, 224);\n"
 "}\n"
 "\n"
-"QPushButton:hover {\n"
-"    color: white;\n"
-"}\n"
-"\n"
 "QLineEdit {\n"
 "    background: transparent;\n"
 "    border: 0 ;\n"
@@ -110,7 +106,6 @@ class Ui_messagingApp(object):
 "    font-size: 22pt;\n"
 "}\n"
 "\n"
-"/* buttons */\n"
 "#createButton {\n"
 "    background-color: rgb(65, 208, 124);\n"
 "}\n"
@@ -140,7 +135,6 @@ class Ui_messagingApp(object):
 "    background-color: rgb(107, 159, 255);\n"
 "}\n"
 "\n"
-"/* end of buttons */\n"
 "#messages {\n"
 "    border: 0;\n"
 "    background-color: white;\n"
@@ -148,6 +142,10 @@ class Ui_messagingApp(object):
 "\n"
 "#messageInput {\n"
 "    border: 0px solid;\n"
+"}\n"
+"\n"
+"QPushButton:hover {\n"
+"    color: white;\n"
 "}\n"
 "\n"
 "#logOut {\n"
@@ -304,7 +302,7 @@ class Ui_messagingApp(object):
         self.charts_tab = QtWidgets.QWidget()
         self.charts_tab.setObjectName("charts_tab")
         self.verticalLayoutWidget = QtWidgets.QWidget(self.charts_tab)
-        self.verticalLayoutWidget.setGeometry(QtCore.QRect(10, 10, 581, 411))
+        self.verticalLayoutWidget.setGeometry(QtCore.QRect(10, 10, 581, 311))
         self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
         self.chartsLayout = QtWidgets.QVBoxLayout(self.verticalLayoutWidget)
         self.chartsLayout.setContentsMargins(0, 0, 0, 0)
@@ -315,6 +313,9 @@ class Ui_messagingApp(object):
         self.admin_generate_messages = QtWidgets.QPushButton(self.charts_tab)
         self.admin_generate_messages.setGeometry(QtCore.QRect(410, 430, 181, 25))
         self.admin_generate_messages.setObjectName("admin_generate_messages")
+        self.refreshChart = QtWidgets.QPushButton(self.charts_tab)
+        self.refreshChart.setGeometry(QtCore.QRect(410, 380, 181, 25))
+        self.refreshChart.setObjectName("refreshChart")
         self.page_2_tabs.addTab(self.charts_tab, "")
         self.account_tab = QtWidgets.QWidget()
         self.account_tab.setObjectName("account_tab")
@@ -406,6 +407,7 @@ class Ui_messagingApp(object):
         self.page_2_tabs.setTabText(self.page_2_tabs.indexOf(self.messages_tab), _translate("messagingApp", "Messages"))
         self.admin_delete_messages.setText(_translate("messagingApp", "Delete Messages"))
         self.admin_generate_messages.setText(_translate("messagingApp", "Generate Messages"))
+        self.refreshChart.setText(_translate("messagingApp", "Refresh Chart"))
         self.page_2_tabs.setTabText(self.page_2_tabs.indexOf(self.charts_tab), _translate("messagingApp", "Charts"))
         self.label.setText(_translate("messagingApp", "Language"))
         self.comboBox.setItemText(0, _translate("messagingApp", "English"))
