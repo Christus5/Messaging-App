@@ -1,6 +1,6 @@
 from gui.myApp import Ui_messagingApp
 import time
-from PyQt5.QtWidgets import QMainWindow, QListWidgetItem
+from PyQt5.QtWidgets import QMainWindow, QListWidgetItem, QLabel, QTextEdit
 from PyQt5.QtGui import QIcon
 from PyQt5.QtMultimedia import QSound
 from assets.classes.timing import Worker
@@ -225,8 +225,9 @@ class Window(QMainWindow, Ui_messagingApp):
         for user in active_users:
             if user['active'] and user['username'] not in self.rendered_users:
                 self.rendered_users.append(user['username'])
-                item = QListWidgetItem(user['username'])
-                self.activeUsers.addItem(item)
+
+                item_wrapper = QListWidgetItem(user['username'])
+                self.activeUsers.addItem(item_wrapper)
 
     """
         Admin functions
