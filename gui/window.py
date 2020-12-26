@@ -53,7 +53,7 @@ class Window(QMainWindow, Ui_messagingApp):
         Active methods (that can be called by users)
     """
 
-    def chart_update(self):
+    def chart_update(self) -> None:
         try:
             df = pd.DataFrame(self.rendered_messages)
             df = (df['sender'].groupby(df['sender'])).count()
@@ -201,8 +201,6 @@ class Window(QMainWindow, Ui_messagingApp):
 
         # update rendered messages list
         self.rendered_messages.append(message)
-        # self.check_messages.update_rendered_messages(self.rendered_messages)
-        # self.chart_update()
 
         # scrolls messages to bottom
         self.messages.ensureCursorVisible()
