@@ -2,7 +2,7 @@ from gui.myApp import Ui_messagingApp
 import time
 from PyQt5.QtWidgets import (QMainWindow)
 from PyQt5 import QtCore
-from assets.classes.timing import (Worker)
+from assets.classes.timing import Worker
 from assets.data_base import (messages, users)
 from assets.data_generator import generate_messages
 from assets.classes.message import Message
@@ -155,7 +155,7 @@ class Window(QMainWindow):
 
         # update rendered messages list
         self.rendered_messages.append(message)
-        self.check_messages.update_rendered_messages(self.rendered_messages)
+        self.check_mess.ages.update_rendered_messages(self.rendered_messages)
         # self.chart_update()
 
         # scrolls messages to bottom
@@ -180,6 +180,10 @@ class Window(QMainWindow):
         self.rendered_messages = []
         self.check_messages.update_rendered_messages(self.rendered_messages)
 
+    def generate_messages(self) -> None:
+        generate_messages(15)
+        self.chart_update()
+
     """
         initialization
     """
@@ -189,7 +193,7 @@ class Window(QMainWindow):
         self.ui.loginButton.clicked.connect(self.login_to_account)
         self.ui.createButton.clicked.connect(self.create_user)
         self.ui.admin_delete_messages.clicked.connect(self.delete_messages)
-        self.ui.admin_generate_messages.clicked.connect(lambda: generate_messages(15))
+        self.ui.admin_generate_messages.clicked.connect(self.generate_messages)
         self.ui.sendButton.clicked.connect(self.send_message)
         self.ui.refreshChart.clicked.connect(self.chart_update)
 
