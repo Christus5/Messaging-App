@@ -1,6 +1,6 @@
 # Messaging-App
 
 **Dependecies:**
-  1. pip install pyqt5 | pip3 install pyqt5
-  2. pip install pyqt5-tools | pip3 install pyqt5-tools
-  3. pip install pymongo | pip3 install pymongo
+
+  pip install -r requirements.txt
+ 

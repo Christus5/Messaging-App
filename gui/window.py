@@ -1,91 +1,205 @@
-from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QMainWindow
-from gui.naming import *
+from gui.myApp import Ui_messagingApp
+import time
+from PyQt5.QtWidgets import (QMainWindow)
+from PyQt5 import QtCore
+from assets.classes.timing import Worker
+from assets.data_base import (messages, users)
+from assets.data_generator import generate_messages
+from assets.classes.message import Message
+from assets.classes.matplotlib_canvas import MplCanvas
+import pandas as pd
 
 
 class Window(QMainWindow):
     def __init__(self):
         super(Window, self).__init__()
+        self.ui = Ui_messagingApp()
+        self.ui.setupUi(self)
 
-        self.setGeometry(0, 0, 500, 500)
-        self.setWindowTitle("Messaging App")
-        self.pages = {
-            login: self.create_login_page(),
-            messages: self.create_messages_page()
-        }
-        self.active_page = None
-        self.set_active_page(login)
-        self.init_login_ui()
-        self.init_messages_ui()
+        "self properties"
+        # current user
+        self.user: str = ''
 
-    def set_active_page(self, name: str):
-        self.active_page = self.pages[name]
-        self.pages[login][inputs]['username'].hide()
+        # messages rendered for current user
+        self.rendered_messages: list = []
 
-        for page in self.pages.keys():
-            print(f"Page: {page}")
-            if name != page:
-                print(f"\tTo be removed: {page}")
-                for widgets in self.pages[page].keys():
-                    print(f"\t\tWidgets: {widgets}")
-                    for widget in self.pages[page][widgets].keys():
-                        self.pages[page][widgets][widget].hide()
+        # check for new messages
+        self.check_messages = Worker(self.rendered_messages)
+
+        "initialization"
+        # set starting indexes at 0
+        self.reset_pages_tabs()
+
+        # button actions
+        self.init_button_actions()
+
+        # background threads
+        self.init_background_workers()
+
+        self.chart_update()
+        self.sc = MplCanvas(self)
+
+        self.df = pd.DataFrame(self.rendered_messages)
+
+    """
+        Active methods (that can be called by users)
+    """
+
+    def chart_update(self):
+        try:
+            df = pd.DataFrame(self.rendered_messages)
+            df = (df['sender'].groupby(df['sender'])).count()
+
+            self.sc.axes.cla()
+
+            df.plot(ax=self.sc.axes,
+                    kind='pie',
+                    autopct='%1.1f%%',
+                    ylabel='')
+
+            self.sc.draw()
+            self.ui.chartsLayout.addWidget(self.sc)
+        except KeyError:
+            pass
+
+    def back_to_login(self) -> None:
+        # stop checking for new messages
+        self.check_messages.terminate()
+
+        # transfer user to login page
+        self.ui.stackedWidget.setCurrentIndex(0)
+
+    def login_to_account(self) -> None:
+        # get inputs from user
+        username = self.ui.inputUsername.text()
+        password = self.ui.inputPassword.text()
+
+        # give user visual response
+        self.set_login_inputs('rgb(186, 189, 182)')
+
+        user = users.find_one({"username": username, "password": password})
+        if user:
+            self.rendered_messages = []
+            self.ui.messages.setText('')
+            self.user = ''
+            self.ui.inputPassword.setText('')
+            self.ui.inputUsername.setText('')
+            self.ui.stackedWidget.setCurrentIndex(1)
+            self.user = username
+            self.check_messages.update_rendered_messages(self.rendered_messages)
+            self.check_messages.start()
+
+            if self.user != 'admin':
+                self.ui.admin_delete_messages.hide()
+                self.ui.admin_generate_messages.hide()
             else:
-                print(f"\tPage to be Shown: {page}")
-                for widgets in self.pages[page].keys():
-                    print(f"\t\tWidgets: {widgets}")
-                    for widget in self.pages[page][widgets].keys():
-                        self.pages[page][widgets][widget].show()
+                self.ui.admin_delete_messages.show()
+                self.ui.admin_generate_messages.show()
 
-    def init_login_ui(self):
-        page = self.pages[login]
-        # აქ როგორც გინდა ისე დაწერე, მე page[buttons] მირჩევნია
-        btns = page[buttons]
-        btns['login'].move(200, 250)
-        btns['login'].setText("Login")
-        btns['login'].clicked.connect(lambda: self.set_active_page(messages))
+            self.ui.loginResult.setText('')
 
-        page[inputs]['username'].move(200, 150)
-        page[inputs]['password'].move(200, 200)
+        else:
+            # give user visual response
+            self.set_login_result("Incorrect login credentials!", 'red')
+            self.set_login_inputs('red')
 
-        for name in page[inputs].keys():
-            page[inputs][name].setStyleSheet('background-color: #531034; color: #FFF;')
+    def create_user(self) -> None:
+        # get inputs from user
+        username: str = self.ui.inputUsername.text()
+        password: str = self.ui.inputPassword.text()
 
-    def init_messages_ui(self):
-        page = self.pages[messages]
+        # check for empty input values
+        if username and password:
+            # check if user exists
+            if users.find_one({"username": username}):
+                # give user visual response
+                self.set_login_result("User already exists!", 'red')
+                self.set_login_inputs('red')
+            else:
+                # create new user in mongodb
+                users.insert_one({"username": username, "password": password})
 
-        page[display]['main'].setGeometry(10, 10, 200, 200)
-        page[display]['main'].setStyleSheet('background-color: #808080')
+                # give user visual response
+                self.set_login_result("Successfully created!", 'green')
+                self.set_login_inputs('green')
+        else:
+            # give user visual response
+            self.set_login_result("Please fill all fields", 'red')
+            self.set_login_inputs('red')
 
-        page[inputs]['main'].setGeometry(10, 220, 150, 30)
+    def send_message(self) -> None:
+        # get text from message input
+        new_message = self.ui.messageInput.toPlainText()
 
-        page[buttons]['send'].setText("Send")
-        page[buttons]['send'].setGeometry(160, 220, 50, 30)
+        # clear message input
+        self.ui.messageInput.setText("")
 
-    def create_login_page(self):
-        return {
-            buttons: {
-                'login': QtWidgets.QPushButton(self)
-            },
-            inputs: {
-                'username': QtWidgets.QTextEdit(self),
-                'password': QtWidgets.QTextEdit(self)
-            },
-            labels: {
-                'username': QtWidgets.QLabel(self),
-                'password': QtWidgets.QLabel(self)
-            }
-        }
+        # check for empty message input
+        if new_message != '':
+            messages.insert_one({"message": new_message, "id": -1, "sender": self.user, "date": time.asctime()})
 
-    def create_messages_page(self):
-        return {
-            display: {
-                'main': QtWidgets.QLabel(self)
-            },
-            inputs: {
-                'main': QtWidgets.QTextEdit(self)
-            },
-            buttons: {
-                'send': QtWidgets.QPushButton(self)
-            }
-        }
+    """ 
+        Passive methods (that run in background) 
+    """
+
+    def render_message(self, message) -> None:
+        # check if sender is user
+        is_user = True if message['sender'] == self.user else False
+
+        # create Message object
+        new_message = Message(message['message'], message['sender'], message['date'], is_user)
+
+        # insert messages to messages frame
+        self.ui.messages.insertHtml(new_message.to_html())
+        self.ui.messages.textCursor().insertBlock()
+
+        # update rendered messages list
+        self.rendered_messages.append(message)
+        self.check_mess.ages.update_rendered_messages(self.rendered_messages)
+        # self.chart_update()
+
+        # scrolls messages to bottom
+        self.ui.messages.ensureCursorVisible()
+
+    def set_login_result(self, text: str, color: str) -> None:
+        self.ui.loginResult.setText(text)
+        self.ui.loginResult.setStyleSheet(f'color: {color};')
+
+    def set_login_inputs(self, color: str) -> None:
+        self.ui.inputUsername.setStyleSheet(f'border-bottom-color: {color};')
+        self.ui.inputPassword.setStyleSheet(f'border-bottom-color: {color};')
+
+    """
+        Admin functions
+    """
+
+    def delete_messages(self) -> None:
+        messages.drop()
+        print(len(self.rendered_messages))
+        self.ui.messages.setText('')
+        self.rendered_messages = []
+        self.check_messages.update_rendered_messages(self.rendered_messages)
+
+    def generate_messages(self) -> None:
+        generate_messages(15)
+        self.chart_update()
+
+    """
+        initialization
+    """
+
+    def init_button_actions(self):
+        self.ui.logOut.clicked.connect(self.back_to_login)
+        self.ui.loginButton.clicked.connect(self.login_to_account)
+        self.ui.createButton.clicked.connect(self.create_user)
+        self.ui.admin_delete_messages.clicked.connect(self.delete_messages)
+        self.ui.admin_generate_messages.clicked.connect(self.generate_messages)
+        self.ui.sendButton.clicked.connect(self.send_message)
+        self.ui.refreshChart.clicked.connect(self.chart_update)
+
+    def init_background_workers(self):
+        self.check_messages.checkMessage.connect(self.render_message)
+
+    def reset_pages_tabs(self):
+        self.ui.stackedWidget.setCurrentIndex(0)
+        self.ui.page_2_tabs.setCurrentIndex(0)
