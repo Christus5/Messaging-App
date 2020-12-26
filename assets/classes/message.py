@@ -65,7 +65,8 @@ class Message(AbstractMessage):
         message = {
             'message': self.__content,
             'sender': self.__sender,
-            'date': self.date
+            'date': self.date,
+            'rtime': self.rtime
         }
 
         messages.insert_one(message)
