@@ -161,7 +161,7 @@ class Window(QMainWindow, Ui_messagingApp):
         if new_message != '':
             messages.insert_one(
                 {"message": new_message, "id": -1, "sender": self.user,
-                 "date": time.asctime(), "tt": time.time()})
+                 "date": time.asctime(), "rtime": time.time()})
 
             QSound.play('assets/sounds/sending_sound.wav')
 
@@ -192,8 +192,9 @@ class Window(QMainWindow, Ui_messagingApp):
 
         # create Message object
         new_message = Message(message['message'], message['sender'],
-                              message['date'], is_user)
+                              message['date'], message['rtime'], is_user)
 
+        print(time.time(), new_message.rtime)
         if not is_user and (time.time() - new_message.rtime < 1.5):
             QSound.play('assets/sounds/receiving_sound.wav')
 
