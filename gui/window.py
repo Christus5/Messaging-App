@@ -160,9 +160,10 @@ class Window(QMainWindow, Ui_messagingApp):
             messages.insert_one(
                 {"message": new_message, "id": -1, "sender": self.user,
                  "date": time.asctime(), "tt": time.time()})
-            QSound.play('sounds/sending sound.wav')
 
-    def toggle_active_users(self):
+            QSound.play('assets/sounds/sending_sound.wav')
+
+    def toggle_active_users(self) -> None:
         self.activeUsersShow = not self.activeUsersShow
         self.activeUsersLabel.hide()
         y: 'int' = 170
@@ -192,7 +193,7 @@ class Window(QMainWindow, Ui_messagingApp):
                               message['date'], is_user)
 
         if not is_user and (new_message.rtime > time.time()):
-            QSound.play('sounds/receiving sound.wav')
+            QSound.play('assets/sounds/receiving_sound.wav')
 
         # insert messages to messages frame
         self.messages.insertHtml(new_message.to_html())
@@ -200,7 +201,7 @@ class Window(QMainWindow, Ui_messagingApp):
 
         # update rendered messages list
         self.rendered_messages.append(message)
-        self.check_messages.update_rendered_messages(self.rendered_messages)
+        # self.check_messages.update_rendered_messages(self.rendered_messages)
         # self.chart_update()
 
         # scrolls messages to bottom
@@ -218,7 +219,7 @@ class Window(QMainWindow, Ui_messagingApp):
         self.inputUsername.setStyleSheet(f'border-bottom-color: {color};')
         self.inputPassword.setStyleSheet(f'border-bottom-color: {color};')
 
-    def render_active_users(self):
+    def render_active_users(self) -> None:
         active_users = list(users.find())
 
         for user in active_users:
@@ -246,7 +247,7 @@ class Window(QMainWindow, Ui_messagingApp):
         initialization
     """
 
-    def init_button_actions(self):
+    def init_button_actions(self) -> None:
         self.logOut.clicked.connect(self.back_to_login)
         self.loginButton.clicked.connect(self.login_to_account)
 
@@ -261,9 +262,9 @@ class Window(QMainWindow, Ui_messagingApp):
         self.refreshChart.clicked.connect(self.chart_update)
         self.activeUsersButton.clicked.connect(self.toggle_active_users)
 
-    def init_background_workers(self):
+    def init_background_workers(self) -> None:
         self.check_messages.checkMessage.connect(self.render_message)
 
-    def reset_pages_tabs(self):
+    def reset_pages_tabs(self) -> None:
         self.stackedWidget.setCurrentIndex(0)
         self.page_2_tabs.setCurrentIndex(0)

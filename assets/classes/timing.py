@@ -1,14 +1,11 @@
-import threading
-import time
 from PyQt5.QtCore import QThread, pyqtSignal
 from assets.data_base import messages
-import pandas as pd
 
 
 class Worker(QThread):
     checkMessage = pyqtSignal(dict)
 
-    def     __init__(self, r_m,  parent=None):
+    def __init__(self, r_m,  parent=None):
         QThread.__init__(self, parent)
         self.running = False
         self.rendered_m = r_m
@@ -18,6 +15,7 @@ class Worker(QThread):
         while self.running:
             for message in messages.find():
                 if message not in self.rendered_m:
+                    self.rendered_m.append(message)
                     self.checkMessage.emit(message)
 
     def terminate(self) -> None:
