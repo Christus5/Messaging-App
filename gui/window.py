@@ -36,6 +36,8 @@ class Window(QMainWindow):
         # background threads
         self.init_background_workers()
 
+        self.init_shorcuts()
+
         self.chart_update()
         self.sc = MplCanvas(self)
 
@@ -191,16 +193,16 @@ class Window(QMainWindow):
     def init_button_actions(self):
         self.ui.logOut.clicked.connect(self.back_to_login)
         self.ui.loginButton.clicked.connect(self.login_to_account)
-
-        # Enter-ის დაჭერით შედის მომხმარებელი
-        self.ui.inputUsername.returnPressed.connect(self.login_to_account)
-        self.ui.inputPassword.returnPressed.connect(self.login_to_account)
-        
         self.ui.createButton.clicked.connect(self.create_user)
         self.ui.admin_delete_messages.clicked.connect(self.delete_messages)
         self.ui.admin_generate_messages.clicked.connect(self.generate_messages)
         self.ui.sendButton.clicked.connect(self.send_message)
         self.ui.refreshChart.clicked.connect(self.chart_update)
+
+    def init_shorcuts(self):
+        # Enter-ის დაჭერით შედის მომხმარებელი
+        self.ui.inputUsername.returnPressed.connect(self.login_to_account)
+        self.ui.inputPassword.returnPressed.connect(self.login_to_account)
 
     def init_background_workers(self):
         self.check_messages.checkMessage.connect(self.render_message)
