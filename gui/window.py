@@ -1,6 +1,7 @@
 from gui.myApp import Ui_messagingApp
 import time
-from PyQt5.QtWidgets import QMainWindow, QListWidgetItem, QLabel, QTextEdit
+from PyQt5.QtWidgets import (QMainWindow, QListWidgetItem)
+from PyQt5 import QtCore
 from PyQt5.QtGui import QIcon
 from PyQt5.QtMultimedia import QSound
 from assets.classes.timing import Worker
@@ -42,6 +43,9 @@ class Window(QMainWindow, Ui_messagingApp):
 
         # button actions
         self.init_button_actions()
+
+        # event listener
+        self.messageInput.installEventFilter(self)
 
         # background threads
         self.init_background_workers()
@@ -230,6 +234,13 @@ class Window(QMainWindow, Ui_messagingApp):
                 item_wrapper = QListWidgetItem(user['username'])
                 self.activeUsers.addItem(item_wrapper)
 
+    def eventFilter(self, obj: 'QObject', event: 'QEvent') -> bool:
+        if event.type() == QtCore.QEvent.KeyPress and obj is self.messageInput:
+            if event.key() == QtCore.Qt.Key_Return and self.messageInput.hasFocus():
+                self.send_message()
+                return True
+        return super().eventFilter(obj, event)
+
     """
         Admin functions
     """
@@ -237,7 +248,7 @@ class Window(QMainWindow, Ui_messagingApp):
     def delete_messages(self) -> None:
         messages.drop()
         print(len(self.rendered_messages))
-        self.messages.setText('')
+        self.messages.clear()
         self.rendered_messages = []
         self.check_messages.update_rendered_messages(self.rendered_messages)
 
