@@ -1,6 +1,7 @@
 from gui.myApp import Ui_messagingApp
 import time
-from PyQt5.QtWidgets import (QMainWindow)
+from PyQt5.QtWidgets import QMainWindow
+from PyQt5.QtGui import QFont
 from PyQt5 import QtCore
 from assets.classes.timing import Worker
 from assets.data_base import (messages, users)
@@ -10,11 +11,10 @@ from assets.classes.matplotlib_canvas import MplCanvas
 import pandas as pd
 
 
-class Window(QMainWindow):
+class Window(QMainWindow, Ui_messagingApp):
     def __init__(self):
         super(Window, self).__init__()
-        self.ui = Ui_messagingApp()
-        self.ui.setupUi(self)
+        self.setupUi(self)
 
         "self properties"
         # current user
@@ -58,7 +58,7 @@ class Window(QMainWindow):
                     ylabel='')
 
             self.sc.draw()
-            self.ui.chartsLayout.addWidget(self.sc)
+            self.chartsLayout.addWidget(self.sc)
         except KeyError:
             pass
 
@@ -67,12 +67,12 @@ class Window(QMainWindow):
         self.check_messages.terminate()
 
         # transfer user to login page
-        self.ui.stackedWidget.setCurrentIndex(0)
+        self.stackedWidget.setCurrentIndex(0)
 
     def login_to_account(self) -> None:
         # get inputs from user
-        username = self.ui.inputUsername.text()
-        password = self.ui.inputPassword.text()
+        username = self.inputUsername.text()
+        password = self.inputPassword.text()
 
         # give user visual response
         self.set_login_inputs('rgb(186, 189, 182)')
@@ -80,23 +80,23 @@ class Window(QMainWindow):
         user = users.find_one({"username": username, "password": password})
         if user:
             self.rendered_messages = []
-            self.ui.messages.setText('')
+            self.messages.setText('')
             self.user = ''
-            self.ui.inputPassword.setText('')
-            self.ui.inputUsername.setText('')
-            self.ui.stackedWidget.setCurrentIndex(1)
+            self.inputPassword.setText('')
+            self.inputUsername.setText('')
+            self.stackedWidget.setCurrentIndex(1)
             self.user = username
             self.check_messages.update_rendered_messages(self.rendered_messages)
             self.check_messages.start()
 
             if self.user != 'admin':
-                self.ui.admin_delete_messages.hide()
-                self.ui.admin_generate_messages.hide()
+                self.admin_delete_messages.hide()
+                self.admin_generate_messages.hide()
             else:
-                self.ui.admin_delete_messages.show()
-                self.ui.admin_generate_messages.show()
+                self.admin_delete_messages.show()
+                self.admin_generate_messages.show()
 
-            self.ui.loginResult.setText('')
+            self.loginResult.setText('')
 
         else:
             # give user visual response
@@ -105,8 +105,8 @@ class Window(QMainWindow):
 
     def create_user(self) -> None:
         # get inputs from user
-        username: str = self.ui.inputUsername.text()
-        password: str = self.ui.inputPassword.text()
+        username: str = self.inputUsername.text()
+        password: str = self.inputPassword.text()
 
         # check for empty input values
         if username and password:
@@ -115,6 +115,12 @@ class Window(QMainWindow):
                 # give user visual response
                 self.set_login_result("User already exists!", 'red')
                 self.set_login_inputs('red')
+            elif len(password) < 8:
+                self.set_login_inputs('red')
+                self.loginResult.setText("Password should contain at least "
+                                         "8 characters")
+                self.loginResult.setStyleSheet('color: red; font-size: 11px')
+
             else:
                 # create new user in mongodb
                 users.insert_one({"username": username, "password": password})
@@ -129,14 +135,16 @@ class Window(QMainWindow):
 
     def send_message(self) -> None:
         # get text from message input
-        new_message = self.ui.messageInput.toPlainText()
+        new_message = self.messageInput.toPlainText()
 
         # clear message input
-        self.ui.messageInput.setText("")
+        self.messageInput.setText("")
 
         # check for empty message input
         if new_message != '':
-            messages.insert_one({"message": new_message, "id": -1, "sender": self.user, "date": time.asctime()})
+            messages.insert_one(
+                {"message": new_message, "id": -1, "sender": self.user,
+                 "date": time.asctime()})
 
     """ 
         Passive methods (that run in background) 
@@ -147,11 +155,12 @@ class Window(QMainWindow):
         is_user = True if message['sender'] == self.user else False
 
         # create Message object
-        new_message = Message(message['message'], message['sender'], message['date'], is_user)
+        new_message = Message(message['message'], message['sender'],
+                              message['date'], is_user)
 
         # insert messages to messages frame
-        self.ui.messages.insertHtml(new_message.to_html())
-        self.ui.messages.textCursor().insertBlock()
+        self.messages.insertHtml(new_message.to_html())
+        self.messages.textCursor().insertBlock()
 
         # update rendered messages list
         self.rendered_messages.append(message)
@@ -159,15 +168,15 @@ class Window(QMainWindow):
         # self.chart_update()
 
         # scrolls messages to bottom
-        self.ui.messages.ensureCursorVisible()
+        self.messages.ensureCursorVisible()
 
     def set_login_result(self, text: str, color: str) -> None:
-        self.ui.loginResult.setText(text)
-        self.ui.loginResult.setStyleSheet(f'color: {color};')
+        self.loginResult.setText(text)
+        self.loginResult.setStyleSheet(f'color: {color};')
 
     def set_login_inputs(self, color: str) -> None:
-        self.ui.inputUsername.setStyleSheet(f'border-bottom-color: {color};')
-        self.ui.inputPassword.setStyleSheet(f'border-bottom-color: {color};')
+        self.inputUsername.setStyleSheet(f'border-bottom-color: {color};')
+        self.inputPassword.setStyleSheet(f'border-bottom-color: {color};')
 
     """
         Admin functions
@@ -176,7 +185,7 @@ class Window(QMainWindow):
     def delete_messages(self) -> None:
         messages.drop()
         print(len(self.rendered_messages))
-        self.ui.messages.setText('')
+        self.messages.setText('')
         self.rendered_messages = []
         self.check_messages.update_rendered_messages(self.rendered_messages)
 
@@ -189,22 +198,22 @@ class Window(QMainWindow):
     """
 
     def init_button_actions(self):
-        self.ui.logOut.clicked.connect(self.back_to_login)
-        self.ui.loginButton.clicked.connect(self.login_to_account)
+        self.logOut.clicked.connect(self.back_to_login)
+        self.loginButton.clicked.connect(self.login_to_account)
 
         # Enter-ის დაჭერით შედის მომხმარებელი
-        self.ui.inputUsername.returnPressed.connect(self.login_to_account)
-        self.ui.inputPassword.returnPressed.connect(self.login_to_account)
-        
-        self.ui.createButton.clicked.connect(self.create_user)
-        self.ui.admin_delete_messages.clicked.connect(self.delete_messages)
-        self.ui.admin_generate_messages.clicked.connect(self.generate_messages)
-        self.ui.sendButton.clicked.connect(self.send_message)
-        self.ui.refreshChart.clicked.connect(self.chart_update)
+        self.inputUsername.returnPressed.connect(self.login_to_account)
+        self.inputPassword.returnPressed.connect(self.login_to_account)
+
+        self.createButton.clicked.connect(self.create_user)
+        self.admin_delete_messages.clicked.connect(self.delete_messages)
+        self.admin_generate_messages.clicked.connect(self.generate_messages)
+        self.sendButton.clicked.connect(self.send_message)
+        self.refreshChart.clicked.connect(self.chart_update)
 
     def init_background_workers(self):
         self.check_messages.checkMessage.connect(self.render_message)
 
     def reset_pages_tabs(self):
-        self.ui.stackedWidget.setCurrentIndex(0)
-        self.ui.page_2_tabs.setCurrentIndex(0)
+        self.stackedWidget.setCurrentIndex(0)
+        self.page_2_tabs.setCurrentIndex(0)
