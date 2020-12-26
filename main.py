@@ -10,4 +10,6 @@ if __name__ == '__main__':
     win.show()
     app.aboutToQuit.connect(lambda: win.check_messages.terminate())
 
+
+
     sys.exit(app.exec_())
