@@ -34,8 +34,9 @@ class Window(QMainWindow, Ui_messagingApp):
         self.reset_pages_tabs()
 
         # When user logins, this checks what message was sent lastly
-        # self.last_message = messages.find().sort('date', -1) \
-        #     .limit(1).next()['date']
+        mess = messages.find()
+        self.last_message = messages.find().sort('date', -1) \
+            .limit(1).next()['date'] if mess else ''
 
         # button actions
         self.init_button_actions()
