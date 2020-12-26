@@ -1,6 +1,7 @@
 from gui.myApp import Ui_messagingApp
 import time
-from PyQt5.QtWidgets import QMainWindow
+from PyQt5.QtWidgets import QMainWindow, QListWidgetItem
+from PyQt5.QtGui import QIcon
 from PyQt5.QtMultimedia import QSound
 from assets.classes.timing import Worker
 from assets.data_base import (messages, users)
@@ -17,10 +18,13 @@ class Window(QMainWindow, Ui_messagingApp):
 
         "self properties"
         # current user
-        self.user: str = ''
+        self.user: 'str' = ''
+
+        self.activeUsersShow: 'bool' = True
 
         # messages rendered for current user
-        self.rendered_messages: list = []
+        self.rendered_messages: 'list' = []
+        self.rendered_users: 'list' = []
 
         # check for new messages
         self.check_messages = Worker(self.rendered_messages)
@@ -30,8 +34,8 @@ class Window(QMainWindow, Ui_messagingApp):
         self.reset_pages_tabs()
 
         # When user logins, this checks what message was sent lastly
-        self.last_message = messages.find().sort('date', -1) \
-            .limit(1).next()['date']
+        # self.last_message = messages.find().sort('date', -1) \
+        #     .limit(1).next()['date']
 
         # button actions
         self.init_button_actions()
@@ -70,6 +74,10 @@ class Window(QMainWindow, Ui_messagingApp):
         # stop checking for new messages
         self.check_messages.terminate()
 
+        users.update_one({'username': self.user}, {'$set': {'active': False}})
+        self.activeUsers.clear()
+        self.rendered_users.clear()
+
         # transfer user to login page
         self.stackedWidget.setCurrentIndex(0)
 
@@ -84,14 +92,16 @@ class Window(QMainWindow, Ui_messagingApp):
         user = users.find_one({"username": username, "password": password})
         if user:
             self.rendered_messages = []
+            self.toggle_active_users()
             self.messages.setText('')
-            self.user = ''
             self.inputPassword.setText('')
             self.inputUsername.setText('')
             self.stackedWidget.setCurrentIndex(1)
             self.user = username
             self.check_messages.update_rendered_messages(self.rendered_messages)
             self.check_messages.start()
+
+            users.update_one(user, {'$set': {'active': True}})
 
             if self.user != 'admin':
                 self.admin_delete_messages.hide()
@@ -127,7 +137,7 @@ class Window(QMainWindow, Ui_messagingApp):
 
             else:
                 # create new user in mongodb
-                users.insert_one({"username": username, "password": password})
+                users.insert_one({"username": username, "password": password, "active": False})
 
                 # give user visual response
                 self.set_login_result("Successfully created!", 'green')
@@ -150,6 +160,23 @@ class Window(QMainWindow, Ui_messagingApp):
                 {"message": new_message, "id": -1, "sender": self.user,
                  "date": time.asctime(), "tt": time.time()})
             QSound.play('sounds/sending sound.wav')
+
+    def toggle_active_users(self):
+        self.activeUsersShow = not self.activeUsersShow
+        self.activeUsersLabel.hide()
+        y: 'int' = 170
+        x: 'int' = 540
+        self.activeUsersButton.setIcon(QIcon('assets/images/arrow_users.svg'))
+        self.activeUsers.hide()
+
+        if self.activeUsersShow:
+            x = 300
+            self.activeUsersLabel.show()
+            self.render_active_users()
+            self.activeUsersButton.setIcon(QIcon('assets/images/arrow_forward.svg'))
+            self.activeUsers.show()
+
+        self.activeUsersButton.move(x, y)
 
     """ 
         Passive methods (that run in background) 
@@ -190,6 +217,15 @@ class Window(QMainWindow, Ui_messagingApp):
         self.inputUsername.setStyleSheet(f'border-bottom-color: {color};')
         self.inputPassword.setStyleSheet(f'border-bottom-color: {color};')
 
+    def render_active_users(self):
+        active_users = list(users.find())
+
+        for user in active_users:
+            if user['active'] and user['username'] not in self.rendered_users:
+                self.rendered_users.append(user['username'])
+                item = QListWidgetItem(user['username'])
+                self.activeUsers.addItem(item)
+
     """
         Admin functions
     """
@@ -222,6 +258,7 @@ class Window(QMainWindow, Ui_messagingApp):
         self.admin_generate_messages.clicked.connect(self.generate_messages)
         self.sendButton.clicked.connect(self.send_message)
         self.refreshChart.clicked.connect(self.chart_update)
+        self.activeUsersButton.clicked.connect(self.toggle_active_users)
 
     def init_background_workers(self):
         self.check_messages.checkMessage.connect(self.render_message)

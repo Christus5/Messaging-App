@@ -8,6 +8,6 @@ if __name__ == '__main__':
     win = Window()
 
     win.show()
-    app.aboutToQuit.connect(lambda: win.check_messages.terminate())
+    app.aboutToQuit.connect(lambda: win.back_to_login())
 
     sys.exit(app.exec_())
