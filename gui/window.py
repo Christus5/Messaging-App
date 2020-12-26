@@ -9,6 +9,7 @@ from assets.data_base import (messages, users)
 from assets.data_generator import generate_messages
 from assets.classes.message import Message
 from assets.classes.matplotlib_canvas import MplCanvas
+from assets.classes.naming import Naming
 import pandas as pd
 
 
@@ -36,8 +37,8 @@ class Window(QMainWindow, Ui_messagingApp):
 
         # When user logins, this checks what message was sent lastly
         try:
-            self.last_message = messages.find().sort('date', -1) \
-                .limit(1).next()['date']
+            self.last_message = messages.find().sort(Naming.DATE, -1) \
+                .limit(1).next()[Naming.DATE]
         except StopIteration:
             self.last_message = None
 
@@ -62,7 +63,7 @@ class Window(QMainWindow, Ui_messagingApp):
     def chart_update(self) -> None:
         try:
             df = pd.DataFrame(self.rendered_messages)
-            df = (df['sender'].groupby(df['sender'])).count()
+            df = (df[Naming.SENDER].groupby(df[Naming.SENDER])).count()
 
             self.sc.axes.cla()
 
@@ -81,7 +82,10 @@ class Window(QMainWindow, Ui_messagingApp):
         # stop checking for new messages
         self.check_messages.terminate()
 
-        users.update_one({'username': self.user}, {'$set': {'active': False}})
+        # update user's state to offline in db
+        users.update_one({Naming.USERNAME: self.user}, {'$set': {Naming.ACTIVE: False}})
+
+        # clear active users pane;
         self.activeUsers.clear()
         self.rendered_users.clear()
 
@@ -96,19 +100,14 @@ class Window(QMainWindow, Ui_messagingApp):
         # give user visual response
         self.set_login_inputs('rgb(186, 189, 182)')
 
-        user = users.find_one({"username": username, "password": password})
+        user = users.find_one({Naming.USERNAME: username, Naming.PASSWORD: password})
         if user:
-            self.rendered_messages = []
-            self.toggle_active_users()
-            self.messages.setText('')
-            self.inputPassword.setText('')
-            self.inputUsername.setText('')
-            self.stackedWidget.setCurrentIndex(1)
+            self.reset_values_for_login()
             self.user = username
             self.check_messages.update_rendered_messages(self.rendered_messages)
             self.check_messages.start()
 
-            users.update_one(user, {'$set': {'active': True}})
+            users.update_one(user, {'$set': {Naming.ACTIVE: True}})
 
             if self.user != 'admin':
                 self.admin_delete_messages.hide()
@@ -132,7 +131,7 @@ class Window(QMainWindow, Ui_messagingApp):
         # check for empty input values
         if username and password:
             # check if user exists
-            if users.find_one({"username": username}):
+            if users.find_one({Naming.USERNAME: username}):
                 # give user visual response
                 self.set_login_result("User already exists!", 'red')
                 self.set_login_inputs('red')
@@ -144,7 +143,7 @@ class Window(QMainWindow, Ui_messagingApp):
 
             else:
                 # create new user in mongodb
-                users.insert_one({"username": username, "password": password, "active": False})
+                users.insert_one({Naming.USERNAME: username, Naming.PASSWORD: password, Naming.ACTIVE: False})
 
                 # give user visual response
                 self.set_login_result("Successfully created!", 'green')
@@ -164,8 +163,8 @@ class Window(QMainWindow, Ui_messagingApp):
         # check for empty message input
         if new_message != '':
             messages.insert_one(
-                {"message": new_message, "id": -1, "sender": self.user,
-                 "date": time.asctime(), "rtime": time.time()})
+                {Naming.MESSAGE: new_message, "id": -1, Naming.SENDER: self.user,
+                 Naming.DATE: time.asctime(), Naming.RTIME: time.time()})
 
             QSound.play('assets/sounds/sending_sound.wav')
 
@@ -192,11 +191,11 @@ class Window(QMainWindow, Ui_messagingApp):
 
     def render_message(self, message) -> None:
         # check if sender is user
-        is_user = True if message['sender'] == self.user else False
+        is_user = True if message[Naming.SENDER] == self.user else False
 
         # create Message object
-        new_message = Message(message['message'], message['sender'],
-                              message['date'], message['rtime'], is_user)
+        new_message = Message(message[Naming.MESSAGE], message[Naming.SENDER],
+                              message[Naming.DATE], message[Naming.RTIME], is_user)
 
         print(time.time(), new_message.rtime)
         if not is_user and (time.time() - new_message.rtime < 1.5):
@@ -228,10 +227,10 @@ class Window(QMainWindow, Ui_messagingApp):
         active_users = list(users.find())
 
         for user in active_users:
-            if user['active'] and user['username'] not in self.rendered_users:
-                self.rendered_users.append(user['username'])
+            if user[Naming.ACTIVE] and user[Naming.USERNAME] not in self.rendered_users:
+                self.rendered_users.append(user[Naming.USERNAME])
 
-                item_wrapper = QListWidgetItem(user['username'])
+                item_wrapper = QListWidgetItem(user[Naming.USERNAME])
                 self.activeUsers.addItem(item_wrapper)
 
     def eventFilter(self, obj: 'QObject', event: 'QEvent') -> bool:
@@ -240,6 +239,14 @@ class Window(QMainWindow, Ui_messagingApp):
                 self.send_message()
                 return True
         return super().eventFilter(obj, event)
+
+    def reset_values_for_login(self):
+        self.rendered_messages = []
+        self.toggle_active_users()
+        self.messages.setText('')
+        self.inputPassword.setText('')
+        self.inputUsername.setText('')
+        self.stackedWidget.setCurrentIndex(1)
 
     """
         Admin functions
