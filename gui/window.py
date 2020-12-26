@@ -29,6 +29,10 @@ class Window(QMainWindow, Ui_messagingApp):
         # set starting indexes at 0
         self.reset_pages_tabs()
 
+        # When user logins, this checks what message was sent lastly
+        self.last_message = messages.find().sort('date', -1) \
+            .limit(1).next()['date']
+
         # button actions
         self.init_button_actions()
 
@@ -53,8 +57,9 @@ class Window(QMainWindow, Ui_messagingApp):
 
             df.plot(ax=self.sc.axes,
                     kind='pie',
-                    autopct='%1.1f%%',
-                    ylabel='')
+                    autopct='%1.0f%%',
+                    ylabel='',
+                    title='Messages Share By User')
 
             self.sc.draw()
             self.chartsLayout.addWidget(self.sc)
@@ -172,6 +177,10 @@ class Window(QMainWindow, Ui_messagingApp):
 
         # scrolls messages to bottom
         self.messages.ensureCursorVisible()
+
+        # When rendering last message sent (during login), update chart
+        if self.last_message == new_message.date:
+            self.chart_update()
 
     def set_login_result(self, text: str, color: str) -> None:
         self.loginResult.setText(text)
