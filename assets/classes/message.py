@@ -20,7 +20,7 @@ class AbstractMessage(metaclass=ABCMeta):
 
 class Message(AbstractMessage):
     def __init__(self, content: str = '', sender: str = '', date='',
-                 is_user: bool = False, rtime: float = 0.0):
+                 rtime: float = 0.0, is_user: bool = False):
         self.__content = content
         self.__sender = sender
         self.date = date

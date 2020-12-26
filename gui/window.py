@@ -34,10 +34,11 @@ class Window(QMainWindow, Ui_messagingApp):
         self.reset_pages_tabs()
 
         # When user logins, this checks what message was sent lastly
-        mess = messages.find()
-        if mess:
+        try:
             self.last_message = messages.find().sort('date', -1) \
                 .limit(1).next()['date']
+        except StopIteration:
+            self.last_message = None
 
         # button actions
         self.init_button_actions()
@@ -193,7 +194,7 @@ class Window(QMainWindow, Ui_messagingApp):
         new_message = Message(message['message'], message['sender'],
                               message['date'], is_user)
 
-        if not is_user and (new_message.rtime > time.time()):
+        if not is_user and (time.time() - new_message.rtime < 1.5):
             QSound.play('assets/sounds/receiving_sound.wav')
 
         # insert messages to messages frame
@@ -207,7 +208,7 @@ class Window(QMainWindow, Ui_messagingApp):
         self.messages.ensureCursorVisible()
 
         # When rendering last message sent (during login), update chart
-        if self.last_message == new_message.date:
+        if self.last_message and self.last_message == new_message.date:
             self.chart_update()
 
     def set_login_result(self, text: str, color: str) -> None:
