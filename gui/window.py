@@ -1,8 +1,7 @@
 from gui.myApp import Ui_messagingApp
 import time
 from PyQt5.QtWidgets import QMainWindow
-from PyQt5.QtGui import QFont
-from PyQt5 import QtCore
+from PyQt5.QtMultimedia import QSound
 from assets.classes.timing import Worker
 from assets.data_base import (messages, users)
 from assets.data_generator import generate_messages
@@ -115,10 +114,10 @@ class Window(QMainWindow, Ui_messagingApp):
                 # give user visual response
                 self.set_login_result("User already exists!", 'red')
                 self.set_login_inputs('red')
-            elif len(password) < 8:
+            elif len(password) < 5:
                 self.set_login_inputs('red')
                 self.loginResult.setText("Password should contain at least "
-                                         "8 characters")
+                                         "5 characters")
                 self.loginResult.setStyleSheet('color: red; font-size: 11px')
 
             else:
@@ -144,7 +143,8 @@ class Window(QMainWindow, Ui_messagingApp):
         if new_message != '':
             messages.insert_one(
                 {"message": new_message, "id": -1, "sender": self.user,
-                 "date": time.asctime()})
+                 "date": time.asctime(), "tt": time.time()})
+            QSound.play('sounds/sending sound.wav')
 
     """ 
         Passive methods (that run in background) 
@@ -157,6 +157,9 @@ class Window(QMainWindow, Ui_messagingApp):
         # create Message object
         new_message = Message(message['message'], message['sender'],
                               message['date'], is_user)
+
+        if not is_user and (new_message.rtime > time.time()):
+            QSound.play('sounds/receiving sound.wav')
 
         # insert messages to messages frame
         self.messages.insertHtml(new_message.to_html())

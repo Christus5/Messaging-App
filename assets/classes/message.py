@@ -19,10 +19,15 @@ class AbstractMessage(metaclass=ABCMeta):
 
 
 class Message(AbstractMessage):
-    def __init__(self, content: str = '', sender: str = '', date='', is_user: bool = False):
+    def __init__(self, content: str = '', sender: str = '', date='',
+                 is_user: bool = False, rtime: float = 0.0):
         self.__content = content
         self.__sender = sender
         self.date = date
+
+        # float returned form time.time() method for comparint to current time
+        self.rtime = rtime
+
         self.check_self()
         self.is_user = is_user
 

@@ -8,7 +8,7 @@ import pandas as pd
 class Worker(QThread):
     checkMessage = pyqtSignal(dict)
 
-    def __init__(self, r_m,  parent=None):
+    def     __init__(self, r_m,  parent=None):
         QThread.__init__(self, parent)
         self.running = False
         self.rendered_m = r_m
