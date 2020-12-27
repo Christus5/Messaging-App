@@ -1,14 +1,24 @@
-from gui.myApp import Ui_messagingApp
-import time
-from PyQt5.QtWidgets import QMainWindow, QListWidgetItem, QLabel, QTextEdit
-from PyQt5.QtGui import QIcon
+# gui
+from gui import Ui_messagingApp
+
+# PyQt5 imports
+from PyQt5.QtWidgets import (QMainWindow, QListWidgetItem, QGraphicsColorizeEffect, QColorDialog, QLabel)
+from PyQt5 import QtCore
+from PyQt5.QtGui import QIcon, QColor
 from PyQt5.QtMultimedia import QSound
-from assets.classes.timing import Worker
-from assets.data_base import (messages, users)
-from assets.data_generator import generate_messages
-from assets.classes.message import Message
-from assets.classes.matplotlib_canvas import MplCanvas
+
+# assets
+from assets import (
+    Worker,
+    messages, users,
+    generate_messages,
+    Message,
+    MplCanvas,
+    Naming)
+
+# other libraries
 import pandas as pd
+import time
 
 
 class Window(QMainWindow, Ui_messagingApp):
@@ -19,12 +29,15 @@ class Window(QMainWindow, Ui_messagingApp):
         "self properties"
         # current user
         self.user: 'str' = ''
+        # selected color
+        self.color: 'str' = QColor()
 
         self.activeUsersShow: 'bool' = True
 
         # messages rendered for current user
         self.rendered_messages: 'list' = []
         self.rendered_users: 'list' = []
+        self.existing_users: 'list' = list(users.find())
 
         # check for new messages
         self.check_messages = Worker(self.rendered_messages)
@@ -35,13 +48,16 @@ class Window(QMainWindow, Ui_messagingApp):
 
         # When user logins, this checks what message was sent lastly
         try:
-            self.last_message = messages.find().sort('date', -1) \
-                .limit(1).next()['date']
+            self.last_message = messages.find().sort(Naming.DATE, -1) \
+                .limit(1).next()[Naming.DATE]
         except StopIteration:
             self.last_message = None
 
         # button actions
         self.init_button_actions()
+
+        # event listener
+        self.messageInput.installEventFilter(self)
 
         # background threads
         self.init_background_workers()
@@ -60,7 +76,7 @@ class Window(QMainWindow, Ui_messagingApp):
     def chart_update(self) -> None:
         try:
             df = pd.DataFrame(self.rendered_messages)
-            df = (df['sender'].groupby(df['sender'])).count()
+            df = (df[Naming.SENDER].groupby(df[Naming.SENDER])).count()
 
             self.sc.axes.cla()
 
@@ -79,7 +95,10 @@ class Window(QMainWindow, Ui_messagingApp):
         # stop checking for new messages
         self.check_messages.terminate()
 
-        users.update_one({'username': self.user}, {'$set': {'active': False}})
+        # update user's state to offline in db
+        users.update_one({Naming.USERNAME: self.user}, {'$set': {Naming.ACTIVE: False}})
+
+        # clear active users pane;
         self.activeUsers.clear()
         self.rendered_users.clear()
 
@@ -94,19 +113,16 @@ class Window(QMainWindow, Ui_messagingApp):
         # give user visual response
         self.set_login_inputs('rgb(186, 189, 182)')
 
-        user = users.find_one({"username": username, "password": password})
+        user = users.find_one({Naming.USERNAME: username, Naming.PASSWORD: password})
         if user:
-            self.rendered_messages = []
-            self.toggle_active_users()
-            self.messages.setText('')
-            self.inputPassword.setText('')
-            self.inputUsername.setText('')
-            self.stackedWidget.setCurrentIndex(1)
+            QSound.play('assets/sounds/login.sound.wav')
+            self.reset_values_for_login()
             self.user = username
+            self.color = user['color']
             self.check_messages.update_rendered_messages(self.rendered_messages)
             self.check_messages.start()
 
-            users.update_one(user, {'$set': {'active': True}})
+            users.update_one(user, {'$set': {Naming.ACTIVE: True}})
 
             if self.user != 'admin':
                 self.admin_delete_messages.hide()
@@ -130,7 +146,7 @@ class Window(QMainWindow, Ui_messagingApp):
         # check for empty input values
         if username and password:
             # check if user exists
-            if users.find_one({"username": username}):
+            if users.find_one({Naming.USERNAME: username}):
                 # give user visual response
                 self.set_login_result("User already exists!", 'red')
                 self.set_login_inputs('red')
@@ -141,8 +157,12 @@ class Window(QMainWindow, Ui_messagingApp):
                 self.loginResult.setStyleSheet('color: red; font-size: 11px')
 
             else:
+                QSound.play('assets/sounds/create.sound.wav')
                 # create new user in mongodb
-                users.insert_one({"username": username, "password": password, "active": False})
+                users.insert_one({Naming.USERNAME: username,
+                                  Naming.PASSWORD: password,
+                                  Naming.ACTIVE: False,
+                                  Naming.COLOR: 'blue'})
 
                 # give user visual response
                 self.set_login_result("Successfully created!", 'green')
@@ -162,13 +182,13 @@ class Window(QMainWindow, Ui_messagingApp):
         # check for empty message input
         if new_message != '':
             messages.insert_one(
-                {"message": new_message, "id": -1, "sender": self.user,
-                 "date": time.asctime(), "tt": time.time()})
+                {Naming.MESSAGE: new_message, "id": -1, Naming.SENDER: self.user,
+                 Naming.DATE: time.asctime(), Naming.RTIME: time.time()})
 
             QSound.play('assets/sounds/sending_sound.wav')
 
-    def toggle_active_users(self) -> None:
-        self.activeUsersShow = not self.activeUsersShow
+    def toggle_active_users(self, close=None) -> None:
+        self.activeUsersShow = not self.activeUsersShow if not close else False
         self.activeUsersLabel.hide()
         y: 'int' = 170
         x: 'int' = 540
@@ -184,18 +204,31 @@ class Window(QMainWindow, Ui_messagingApp):
 
         self.activeUsersButton.move(x, y)
 
+    def save_settings(self):
+        users.update_one({Naming.USERNAME: self.user}, {'$set': {'color': self.color.name()}})
+
     """ 
         Passive methods (that run in background) 
     """
 
     def render_message(self, message) -> None:
         # check if sender is user
-        is_user = True if message['sender'] == self.user else False
+        is_user = True if message[Naming.SENDER] == self.user else False
+        color = 'blue'
 
+        for user in self.existing_users:
+            if user[Naming.USERNAME] == message[Naming.SENDER]:
+                try:
+                    color = user['color']
+                except KeyError:
+                    pass
+                finally:
+                    break
         # create Message object
-        new_message = Message(message['message'], message['sender'],
-                              message['date'], is_user)
+        new_message = Message(message[Naming.MESSAGE], message[Naming.SENDER],
+                              message[Naming.DATE], message[Naming.RTIME], is_user, color=color)
 
+        # print(time.time(), new_message.rtime)
         if not is_user and (time.time() - new_message.rtime < 1.5):
             QSound.play('assets/sounds/receiving_sound.wav')
 
@@ -225,11 +258,26 @@ class Window(QMainWindow, Ui_messagingApp):
         active_users = list(users.find())
 
         for user in active_users:
-            if user['active'] and user['username'] not in self.rendered_users:
-                self.rendered_users.append(user['username'])
+            if user[Naming.ACTIVE] and user[Naming.USERNAME] not in self.rendered_users:
+                self.rendered_users.append(user[Naming.USERNAME])
 
-                item_wrapper = QListWidgetItem(user['username'])
+                item_wrapper = QListWidgetItem(user[Naming.USERNAME])
                 self.activeUsers.addItem(item_wrapper)
+
+    def eventFilter(self, obj: 'QObject', event: 'QEvent') -> bool:
+        if event.type() == QtCore.QEvent.KeyPress and obj is self.messageInput:
+            if event.key() == QtCore.Qt.Key_Return and self.messageInput.hasFocus():
+                self.send_message()
+                return True
+        return super().eventFilter(obj, event)
+
+    def reset_values_for_login(self):
+        self.rendered_messages = []
+        self.toggle_active_users(close=True)
+        self.messages.setText('')
+        self.inputPassword.setText('')
+        self.inputUsername.setText('')
+        self.stackedWidget.setCurrentIndex(1)
 
     """
         Admin functions
@@ -238,7 +286,7 @@ class Window(QMainWindow, Ui_messagingApp):
     def delete_messages(self) -> None:
         messages.drop()
         print(len(self.rendered_messages))
-        self.messages.setText('')
+        self.messages.clear()
         self.rendered_messages = []
         self.check_messages.update_rendered_messages(self.rendered_messages)
 
@@ -251,18 +299,30 @@ class Window(QMainWindow, Ui_messagingApp):
     """
 
     def init_button_actions(self):
-        self.ui.logOut.clicked.connect(self.back_to_login)
-        self.ui.loginButton.clicked.connect(self.login_to_account)
-        self.ui.createButton.clicked.connect(self.create_user)
-        self.ui.admin_delete_messages.clicked.connect(self.delete_messages)
-        self.ui.admin_generate_messages.clicked.connect(self.generate_messages)
-        self.ui.sendButton.clicked.connect(self.send_message)
-        self.ui.refreshChart.clicked.connect(self.chart_update)
+        self.createButton.clicked.connect(self.create_user)
+        self.admin_delete_messages.clicked.connect(self.delete_messages)
+        self.admin_generate_messages.clicked.connect(self.generate_messages)
+        self.sendButton.clicked.connect(self.send_message)
+        self.refreshChart.clicked.connect(self.chart_update)
+        self.activeUsersButton.clicked.connect(self.toggle_active_users)
+        self.color_selector.clicked.connect(self.select_color)
+        self.save_button.clicked.connect(self.save_settings)
 
     def init_shorcuts(self):
         # Enter-ის დაჭერით შედის მომხმარებელი
-        self.ui.inputUsername.returnPressed.connect(self.login_to_account)
-        self.ui.inputPassword.returnPressed.connect(self.login_to_account)
+        self.inputUsername.returnPressed.connect(self.login_to_account)
+        self.inputPassword.returnPressed.connect(self.login_to_account)
+
+    def select_color(self):
+        self.color = QColorDialog.getColor()
+        label = QLabel(self)
+        label.setGeometry(100, 100, 200, 60)
+        label.setWordWrap(True)
+        label.setText(str(self.color))
+        color_picker = QGraphicsColorizeEffect(self)
+        color_picker.setColor(self.color)
+        label.setGraphicsEffect(color_picker)
+        self.color_selector.setStyleSheet(f'background-color: {self.color.name()};')
 
     def init_background_workers(self):
         self.check_messages.checkMessage.connect(self.render_message)
