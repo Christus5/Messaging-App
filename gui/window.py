@@ -37,7 +37,7 @@ class Window(QMainWindow, Ui_messagingApp):
         # messages rendered for current user
         self.rendered_messages: 'list' = []
         self.rendered_users: 'list' = []
-        self.existing_users: 'list' = []
+        self.existing_users: 'list' = list(users.find())
 
         # check for new messages
         self.check_messages = Worker(self.rendered_messages)
@@ -157,7 +157,8 @@ class Window(QMainWindow, Ui_messagingApp):
             else:
                 QSound.play('assets/sounds/create.sound.wav')
                 # create new user in mongodb
-                users.insert_one({Naming.USERNAME: username, Naming.PASSWORD: password, Naming.ACTIVE: False})
+                users.insert_one({Naming.USERNAME: username, Naming.PASSWORD: password,
+                                  Naming.ACTIVE: False, Naming.COLOR: 'blue'})
 
                 # give user visual response
                 self.set_login_result("Successfully created!", 'green')
@@ -213,8 +214,12 @@ class Window(QMainWindow, Ui_messagingApp):
 
         for user in self.existing_users:
             if user[Naming.USERNAME] == message[Naming.SENDER]:
-                color = user['color']
-                break
+                try:
+                    color = user['color']
+                except KeyError:
+                    pass
+                finally:
+                    break
         # create Message object
         new_message = Message(message[Naming.MESSAGE], message[Naming.SENDER],
                               message[Naming.DATE], message[Naming.RTIME], is_user, color=color)
