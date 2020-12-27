@@ -157,8 +157,10 @@ class Window(QMainWindow, Ui_messagingApp):
             else:
                 QSound.play('assets/sounds/create.sound.wav')
                 # create new user in mongodb
-                users.insert_one({Naming.USERNAME: username, Naming.PASSWORD: password,
-                                  Naming.ACTIVE: False, Naming.COLOR: 'blue'})
+                users.insert_one({Naming.USERNAME: username,
+                                  Naming.PASSWORD: password,
+                                  Naming.ACTIVE: False,
+                                  Naming.COLOR: 'blue'})
 
                 # give user visual response
                 self.set_login_result("Successfully created!", 'green')
