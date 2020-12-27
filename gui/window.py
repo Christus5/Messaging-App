@@ -8,12 +8,13 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtMultimedia import QSound
 
 # assets
-from assets import (Worker,
-                    messages, users,
-                    generate_messages,
-                    Message,
-                    MplCanvas,
-                    Naming)
+from assets import (
+    Worker,
+    messages, users,
+    generate_messages,
+    Message,
+    MplCanvas,
+    Naming)
 
 # other libraries
 import pandas as pd
