@@ -174,6 +174,12 @@ class Ui_messagingApp(object):
 "    background-color: rgb(239, 41, 41);\n"
 "}\n"
 "\n"
+"#color_selector {\n"
+"    background-color: rgba(0, 0, 0, 0.3);\n"
+"    text-align: left;\n"
+"    padding-left: 5px; \n"
+"}\n"
+"\n"
 "/* drop down */\n"
 "\n"
 "QComboBox {\n"
@@ -397,12 +403,10 @@ class Ui_messagingApp(object):
         self.line_2.setFrameShape(QtWidgets.QFrame.HLine)
         self.line_2.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.line_2.setObjectName("line_2")
-        self.color_selector = QtWidgets.QComboBox(self.frame)
+        self.color_selector = QtWidgets.QPushButton(self.frame)
         self.color_selector.setGeometry(QtCore.QRect(20, 140, 138, 31))
         self.color_selector.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.color_selector.setFrame(True)
         self.color_selector.setObjectName("color_selector")
-        self.color_selector.addItem("")
         self.page_2_tabs.addTab(self.account_tab, "")
         self.stackedWidget.addWidget(self.page_2)
         messagingApp.setCentralWidget(self.centralwidget)
@@ -425,7 +429,7 @@ class Ui_messagingApp(object):
 
         self.retranslateUi(messagingApp)
         self.stackedWidget.setCurrentIndex(1)
-        self.page_2_tabs.setCurrentIndex(0)
+        self.page_2_tabs.setCurrentIndex(2)
         QtCore.QMetaObject.connectSlotsByName(messagingApp)
 
     def retranslateUi(self, messagingApp):
@@ -455,7 +459,7 @@ class Ui_messagingApp(object):
         self.save_button.setText(_translate("messagingApp", "Save"))
         self.logOut.setText(_translate("messagingApp", "Log Out"))
         self.label_2.setText(_translate("messagingApp", "User color"))
-        self.color_selector.setItemText(0, _translate("messagingApp", "Select Color"))
+        self.color_selector.setText(_translate("messagingApp", "Select Color"))
         self.page_2_tabs.setTabText(self.page_2_tabs.indexOf(self.account_tab), _translate("messagingApp", "Account"))
         self.actionLog_Iyt.setText(_translate("messagingApp", "Log out"))
         self.actionEdit.setText(_translate("messagingApp", "Edit"))

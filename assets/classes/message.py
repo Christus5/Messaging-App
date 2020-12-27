@@ -20,7 +20,7 @@ class AbstractMessage(metaclass=ABCMeta):
 
 class Message(AbstractMessage):
     def __init__(self, content: str = '', sender: str = '', date='',
-                 rtime: float = 0.0, is_user: bool = False):
+                 rtime: float = 0.0, is_user: bool = False, color: 'str' = 'blue'):
         self.__content = content
         self.__sender = sender
         self.date = date
@@ -30,6 +30,7 @@ class Message(AbstractMessage):
 
         self.check_self()
         self.is_user = is_user
+        self.color = 'red' if is_user else color
 
     def check_self(self):
         if not self.__content and \
@@ -50,10 +51,7 @@ class Message(AbstractMessage):
     def to_html(self):
         div_style = 'margin-top: 10px;'
         date_style = 'color: gray; font-size: 8pt;'
-        sender_style = 'color: blue;'
-
-        if self.is_user:
-            sender_style = 'color: red;'
+        sender_style = f'color: {self.color};'
 
         return f'''<div style="{div_style}"> 
                         <span style="{sender_style}">{self.__sender}</span>: {self.__content}

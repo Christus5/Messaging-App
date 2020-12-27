@@ -2,9 +2,9 @@
 from gui import Ui_messagingApp
 
 # PyQt5 imports
-from PyQt5.QtWidgets import (QMainWindow, QListWidgetItem)
+from PyQt5.QtWidgets import (QMainWindow, QListWidgetItem, QGraphicsColorizeEffect, QColorDialog, QLabel)
 from PyQt5 import QtCore
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon, QColor
 from PyQt5.QtMultimedia import QSound
 
 # assets
@@ -202,10 +202,13 @@ class Window(QMainWindow, Ui_messagingApp):
     def render_message(self, message) -> None:
         # check if sender is user
         is_user = True if message[Naming.SENDER] == self.user else False
-
+        color = 'blue'
+        for user in users.find():
+            if user[Naming.USERNAME] == message[Naming.SENDER]:
+                color = user['color']
         # create Message object
         new_message = Message(message[Naming.MESSAGE], message[Naming.SENDER],
-                              message[Naming.DATE], message[Naming.RTIME], is_user)
+                              message[Naming.DATE], message[Naming.RTIME], is_user, color=color)
 
         print(time.time(), new_message.rtime)
         if not is_user and (time.time() - new_message.rtime < 1.5):
@@ -291,6 +294,23 @@ class Window(QMainWindow, Ui_messagingApp):
         self.sendButton.clicked.connect(self.send_message)
         self.refreshChart.clicked.connect(self.chart_update)
         self.activeUsersButton.clicked.connect(self.toggle_active_users)
+        self.color_selector.clicked.connect(self.select_color)
+        self.save_button.clicked.connect(self.save_settings)
+
+    def select_color(self):
+        self.color = QColorDialog.getColor()
+        label = QLabel(self)
+        label.setGeometry(100, 100, 200, 60)
+        label.setWordWrap(True)
+        label.setText(str(self.color))
+        color_picker = QGraphicsColorizeEffect(self)
+        color_picker.setColor(self.color)
+        label.setGraphicsEffect(color_picker)
+        self.color_selector.setStyleSheet(f'background-color: {self.color.name()};')
+
+    def save_settings(self):
+        users.update_one({Naming.USERNAME: self.user}, {'$set': {'color': self.color.name()}})
+
 
     def init_background_workers(self) -> None:
         self.check_messages.checkMessage.connect(self.render_message)
