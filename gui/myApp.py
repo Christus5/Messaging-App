@@ -15,6 +15,8 @@ class Ui_messagingApp(object):
     def setupUi(self, messagingApp):
         messagingApp.setObjectName("messagingApp")
         messagingApp.resize(600, 500)
+        messagingApp.setMinimumSize(QtCore.QSize(600, 500))
+        messagingApp.setMaximumSize(QtCore.QSize(600, 500))
         messagingApp.setStyleSheet("/* default */\n"
 "*{\n"
 "    font-family: Helvetica;\n"
@@ -34,6 +36,11 @@ class Ui_messagingApp(object):
 "    border-bottom: 1px solid rgb(186, 189, 182);\n"
 "    color: white;\n"
 "}\n"
+"\n"
+"QPushButton:hover {\n"
+"    color: white;\n"
+"}\n"
+"\n"
 "\n"
 "/* end of default */\n"
 "\n"
@@ -126,6 +133,8 @@ class Ui_messagingApp(object):
 "    background-color: rgb(65, 208, 124);\n"
 "}\n"
 "\n"
+"/* messages tab */\n"
+"\n"
 "#sendButton {\n"
 "    background-color: rgb(17, 132, 224);\n"
 "    border-radius: 15px;\n"
@@ -140,13 +149,26 @@ class Ui_messagingApp(object):
 "    background-color: white;\n"
 "}\n"
 "\n"
+"#activeUsers {\n"
+"    padding-top: 50px;\n"
+"    padding-left: 10px;\n"
+"    background-color: rgb(243, 243, 243);\n"
+"}\n"
+"\n"
+"#activeUsersButton {\n"
+"    background-color: transparent;\n"
+"}\n"
+"\n"
+"#activeUsersButton:focus{\n"
+"    outline: none;\n"
+"}\n"
+"\n"
 "#messageInput {\n"
 "    border: 0px solid;\n"
 "}\n"
 "\n"
-"QPushButton:hover {\n"
-"    color: white;\n"
-"}\n"
+"/* end of messages tab */\n"
+"\n"
 "\n"
 "#logOut {\n"
 "    background-color: rgb(239, 41, 41);\n"
@@ -298,6 +320,21 @@ class Ui_messagingApp(object):
         self.messages.setAccessibleDescription("")
         self.messages.setReadOnly(True)
         self.messages.setObjectName("messages")
+        self.activeUsersButton = QtWidgets.QPushButton(self.messages_tab)
+        self.activeUsersButton.setGeometry(QtCore.QRect(540, 180, 51, 51))
+        self.activeUsersButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.activeUsersButton.setText("")
+        icon1 = QtGui.QIcon()
+        icon1.addPixmap(QtGui.QPixmap("assets/images/arrow_back_ios_new-black-18dp.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.activeUsersButton.setIcon(icon1)
+        self.activeUsersButton.setObjectName("activeUsersButton")
+        self.activeUsers = QtWidgets.QListWidget(self.messages_tab)
+        self.activeUsers.setGeometry(QtCore.QRect(340, 0, 261, 421))
+        self.activeUsers.setObjectName("activeUsers")
+        self.activeUsersLabel = QtWidgets.QLabel(self.messages_tab)
+        self.activeUsersLabel.setGeometry(QtCore.QRect(390, 10, 161, 20))
+        self.activeUsersLabel.setAlignment(QtCore.Qt.AlignCenter)
+        self.activeUsersLabel.setObjectName("activeUsersLabel")
         self.page_2_tabs.addTab(self.messages_tab, "")
         self.charts_tab = QtWidgets.QWidget()
         self.charts_tab.setObjectName("charts_tab")
@@ -309,12 +346,15 @@ class Ui_messagingApp(object):
         self.chartsLayout.setObjectName("chartsLayout")
         self.admin_delete_messages = QtWidgets.QPushButton(self.charts_tab)
         self.admin_delete_messages.setGeometry(QtCore.QRect(10, 430, 161, 25))
+        self.admin_delete_messages.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.admin_delete_messages.setObjectName("admin_delete_messages")
         self.admin_generate_messages = QtWidgets.QPushButton(self.charts_tab)
         self.admin_generate_messages.setGeometry(QtCore.QRect(410, 430, 181, 25))
+        self.admin_generate_messages.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.admin_generate_messages.setObjectName("admin_generate_messages")
         self.refreshChart = QtWidgets.QPushButton(self.charts_tab)
         self.refreshChart.setGeometry(QtCore.QRect(410, 380, 181, 25))
+        self.refreshChart.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.refreshChart.setObjectName("refreshChart")
         self.page_2_tabs.addTab(self.charts_tab, "")
         self.account_tab = QtWidgets.QWidget()
@@ -357,13 +397,12 @@ class Ui_messagingApp(object):
         self.line_2.setFrameShape(QtWidgets.QFrame.HLine)
         self.line_2.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.line_2.setObjectName("line_2")
-        self.comboBox_3 = QtWidgets.QComboBox(self.frame)
-        self.comboBox_3.setGeometry(QtCore.QRect(20, 140, 138, 31))
-        self.comboBox_3.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.comboBox_3.setFrame(True)
-        self.comboBox_3.setObjectName("comboBox_3")
-        self.comboBox_3.addItem("")
-        self.comboBox_3.addItem("")
+        self.color_selector = QtWidgets.QComboBox(self.frame)
+        self.color_selector.setGeometry(QtCore.QRect(20, 140, 138, 31))
+        self.color_selector.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.color_selector.setFrame(True)
+        self.color_selector.setObjectName("color_selector")
+        self.color_selector.addItem("")
         self.page_2_tabs.addTab(self.account_tab, "")
         self.stackedWidget.addWidget(self.page_2)
         messagingApp.setCentralWidget(self.centralwidget)
@@ -386,7 +425,7 @@ class Ui_messagingApp(object):
 
         self.retranslateUi(messagingApp)
         self.stackedWidget.setCurrentIndex(1)
-        self.page_2_tabs.setCurrentIndex(1)
+        self.page_2_tabs.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(messagingApp)
 
     def retranslateUi(self, messagingApp):
@@ -404,6 +443,7 @@ class Ui_messagingApp(object):
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'Helvetica\'; font-size:12pt; font-weight:600; font-style:normal;\">\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>"))
+        self.activeUsersLabel.setText(_translate("messagingApp", "Active Users"))
         self.page_2_tabs.setTabText(self.page_2_tabs.indexOf(self.messages_tab), _translate("messagingApp", "Messages"))
         self.admin_delete_messages.setText(_translate("messagingApp", "Delete Messages"))
         self.admin_generate_messages.setText(_translate("messagingApp", "Generate Messages"))
@@ -415,8 +455,7 @@ class Ui_messagingApp(object):
         self.save_button.setText(_translate("messagingApp", "Save"))
         self.logOut.setText(_translate("messagingApp", "Log Out"))
         self.label_2.setText(_translate("messagingApp", "User color"))
-        self.comboBox_3.setItemText(0, _translate("messagingApp", "Blue"))
-        self.comboBox_3.setItemText(1, _translate("messagingApp", "Green"))
+        self.color_selector.setItemText(0, _translate("messagingApp", "Select Color"))
         self.page_2_tabs.setTabText(self.page_2_tabs.indexOf(self.account_tab), _translate("messagingApp", "Account"))
         self.actionLog_Iyt.setText(_translate("messagingApp", "Log out"))
         self.actionEdit.setText(_translate("messagingApp", "Edit"))
