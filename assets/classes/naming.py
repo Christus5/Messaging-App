@@ -3,6 +3,7 @@ class Naming:
     USERNAME: 'str' = 'username'
     PASSWORD: 'str' = 'password'
     ACTIVE: 'str' = 'active'
+    COLOR: 'str' = 'color'
 
     # Message
     MESSAGE: 'str' = 'message'

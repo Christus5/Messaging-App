@@ -37,6 +37,7 @@ class Window(QMainWindow, Ui_messagingApp):
         # messages rendered for current user
         self.rendered_messages: 'list' = []
         self.rendered_users: 'list' = []
+        self.existing_users: 'list' = []
 
         # check for new messages
         self.check_messages = Worker(self.rendered_messages)
@@ -181,8 +182,8 @@ class Window(QMainWindow, Ui_messagingApp):
 
             QSound.play('assets/sounds/sending_sound.wav')
 
-    def toggle_active_users(self) -> None:
-        self.activeUsersShow = not self.activeUsersShow
+    def toggle_active_users(self, close=None) -> None:
+        self.activeUsersShow = not self.activeUsersShow if not close else False
         self.activeUsersLabel.hide()
         y: 'int' = 170
         x: 'int' = 540
@@ -209,14 +210,16 @@ class Window(QMainWindow, Ui_messagingApp):
         # check if sender is user
         is_user = True if message[Naming.SENDER] == self.user else False
         color = 'blue'
-        for user in users.find():
+
+        for user in self.existing_users:
             if user[Naming.USERNAME] == message[Naming.SENDER]:
                 color = user['color']
+                break
         # create Message object
         new_message = Message(message[Naming.MESSAGE], message[Naming.SENDER],
                               message[Naming.DATE], message[Naming.RTIME], is_user, color=color)
 
-        print(time.time(), new_message.rtime)
+        # print(time.time(), new_message.rtime)
         if not is_user and (time.time() - new_message.rtime < 1.5):
             QSound.play('assets/sounds/receiving_sound.wav')
 
@@ -261,7 +264,7 @@ class Window(QMainWindow, Ui_messagingApp):
 
     def reset_values_for_login(self):
         self.rendered_messages = []
-        self.toggle_active_users()
+        self.toggle_active_users(close=True)
         self.messages.setText('')
         self.inputPassword.setText('')
         self.inputUsername.setText('')
