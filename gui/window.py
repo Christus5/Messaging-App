@@ -29,6 +29,8 @@ class Window(QMainWindow, Ui_messagingApp):
         "self properties"
         # current user
         self.user: 'str' = ''
+        # selected color
+        self.color: 'str' = QColor()
 
         self.activeUsersShow: 'bool' = True
 
@@ -113,6 +115,7 @@ class Window(QMainWindow, Ui_messagingApp):
             QSound.play('assets/sounds/login.sound.wav')
             self.reset_values_for_login()
             self.user = username
+            self.color = user['color']
             self.check_messages.update_rendered_messages(self.rendered_messages)
             self.check_messages.start()
 
@@ -194,6 +197,9 @@ class Window(QMainWindow, Ui_messagingApp):
             self.activeUsers.show()
 
         self.activeUsersButton.move(x, y)
+
+    def save_settings(self):
+        users.update_one({Naming.USERNAME: self.user}, {'$set': {'color': self.color.name()}})
 
     """ 
         Passive methods (that run in background) 
@@ -307,10 +313,6 @@ class Window(QMainWindow, Ui_messagingApp):
         color_picker.setColor(self.color)
         label.setGraphicsEffect(color_picker)
         self.color_selector.setStyleSheet(f'background-color: {self.color.name()};')
-
-    def save_settings(self):
-        users.update_one({Naming.USERNAME: self.user}, {'$set': {'color': self.color.name()}})
-
 
     def init_background_workers(self) -> None:
         self.check_messages.checkMessage.connect(self.render_message)
