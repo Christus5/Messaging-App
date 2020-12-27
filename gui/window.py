@@ -62,7 +62,7 @@ class Window(QMainWindow, Ui_messagingApp):
         # background threads
         self.init_background_workers()
 
-        self.init_shorcuts()
+        self.init_shortcuts()
 
         self.chart_update()
         self.sc = MplCanvas(self)
@@ -272,7 +272,7 @@ class Window(QMainWindow, Ui_messagingApp):
         return super().eventFilter(obj, event)
 
     def reset_values_for_login(self):
-        self.rendered_messages = []
+        self.rendered_messages.clear()
         self.toggle_active_users(close=True)
         self.messages.setText('')
         self.inputPassword.setText('')
@@ -299,6 +299,8 @@ class Window(QMainWindow, Ui_messagingApp):
     """
 
     def init_button_actions(self):
+        self.logOut.clicked.connect(self.back_to_login)
+        self.loginButton.clicked.connect(self.login_to_account)
         self.createButton.clicked.connect(self.create_user)
         self.admin_delete_messages.clicked.connect(self.delete_messages)
         self.admin_generate_messages.clicked.connect(self.generate_messages)
@@ -308,7 +310,7 @@ class Window(QMainWindow, Ui_messagingApp):
         self.color_selector.clicked.connect(self.select_color)
         self.save_button.clicked.connect(self.save_settings)
 
-    def init_shorcuts(self):
+    def init_shortcuts(self):
         # Enter-ის დაჭერით შედის მომხმარებელი
         self.inputUsername.returnPressed.connect(self.login_to_account)
         self.inputPassword.returnPressed.connect(self.login_to_account)
