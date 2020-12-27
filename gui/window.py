@@ -110,6 +110,7 @@ class Window(QMainWindow, Ui_messagingApp):
 
         user = users.find_one({Naming.USERNAME: username, Naming.PASSWORD: password})
         if user:
+            QSound.play('assets/sounds/login.sound.wav')
             self.reset_values_for_login()
             self.user = username
             self.check_messages.update_rendered_messages(self.rendered_messages)
@@ -150,6 +151,7 @@ class Window(QMainWindow, Ui_messagingApp):
                 self.loginResult.setStyleSheet('color: red; font-size: 11px')
 
             else:
+                QSound.play('assets/sounds/create.sound.wav')
                 # create new user in mongodb
                 users.insert_one({Naming.USERNAME: username, Naming.PASSWORD: password, Naming.ACTIVE: False})
 
