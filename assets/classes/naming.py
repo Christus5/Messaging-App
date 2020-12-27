@@ -1,5 +1,5 @@
 class Naming:
-    # user
+    # User
     USERNAME: 'str' = 'username'
     PASSWORD: 'str' = 'password'
     ACTIVE: 'str' = 'active'
@@ -9,3 +9,7 @@ class Naming:
     DATE: 'str' = 'date'
     SENDER: 'str' = 'sender'
     RTIME: 'str' = 'rtime'
+
+    # Data Base
+    MESSAGES: 'str' = 'messages'
+    USERS: 'str' = 'users'

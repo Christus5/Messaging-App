@@ -1,16 +1,23 @@
-from gui.myApp import Ui_messagingApp
-import time
+# gui
+from gui import Ui_messagingApp
+
+# PyQt5 imports
 from PyQt5.QtWidgets import (QMainWindow, QListWidgetItem)
 from PyQt5 import QtCore
 from PyQt5.QtGui import QIcon
 from PyQt5.QtMultimedia import QSound
-from assets.classes.timing import Worker
-from assets.data_base import (messages, users)
-from assets.data_generator import generate_messages
-from assets.classes.message import Message
-from assets.classes.matplotlib_canvas import MplCanvas
-from assets.classes.naming import Naming
+
+# assets
+from assets import (Worker,
+                    messages, users,
+                    generate_messages,
+                    Message,
+                    MplCanvas,
+                    Naming)
+
+# other libraries
 import pandas as pd
+import time
 
 
 class Window(QMainWindow, Ui_messagingApp):
